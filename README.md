@@ -39,7 +39,7 @@ npm i de-indent
     6. 联系方式
     7. 贡献者（贡献代码）
 ### 介绍
-[![Build Status](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue.svg?branch=master)](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue)
+[![Build Status](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue-for-input.svg?branch=master)](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue-for-input)
 * 通过小图标说明我们的持续集成是通过的。
 ### 开始使用
 1. 安装
