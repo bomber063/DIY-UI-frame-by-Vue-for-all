@@ -41,8 +41,52 @@ npm i de-indent
 ### 介绍
 [![Build Status](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue-for-input.svg?branch=master)](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue-for-input)
 * 通过小图标说明我们的持续集成是通过的。
+* 这是我在学习Vue的过程中做的一个UI框架，希望对你有用。
 ### 开始使用
-1. 安装
+1. 添加CSS样式
+    使用本框架前，请在CSS中开启border-box
+    ```
+    *{box-sizing:border-box;}
+    //因为默认*元素是不包括::before和::after的，所以要加上
+    *::before{box-sizing:border-box;}
+    *::afeter{box-sizing:border-box;}
+    ``` 
+    IE8及以上的浏览器都支持此样式。
+    你还需要设置默认颜色等变量（后续会改为scss变量）
+    ```
+    :root{  
+        --button-height:32px;
+        --font-size:14px;
+        --button-bg:white;
+        --button-active-bg:#eee;
+        --border-radius:4px;
+        --color:#333;
+        --border-color:#999;
+        /*--border-color-hover:#666;*/
+        --border-color-hover:#666;
+    }
+    //这里的:root也可以换成html，是一个意思
+    ```
+    这个的兼容性通过[caniuse](https://www.caniuse.com/)的网站查询css var发现兼容性不太好。IE 16及以上才全部支持此样式，IE15部分支持。
+2. 安装轱辘(gulu)
+```
+npm i -S gulu-bomber-1-1
+//-S是从npm5就默认增加了，但是低于版本5的需要加上这个-S，-S的全称是--save，他会保存到package里面。
+```
+3. 引入轱辘(gulu)
+```
+import {Button,ButtonGroup,Icon} from 'gulu-bomber-1-1'
+import 'gulu-bomber-1-1/dist/index.css'
+
+export default {
+  name: 'app',
+  components: {
+    'g-button':Button,
+    'g-icon':Icon
+  }
+}
+```
+
 ### 文档
 ### 提问
 ### 变更记录
@@ -54,4 +98,35 @@ npm i de-indent
     1. 首先打开你的travis.ci，点击build passing这个小图标后打开一个Status Image
     2. 在对话框中选择分支和格式（比如markdown格式）。
     3. 复制文本并将其粘贴到您的自述文件或网站中。应该可以查看
+### 其他标记
+* 通过Google查询npm badge查询到[说明](https://www.quora.com/How-do-I-add-an-NPM-package-badge-for-my-project-on-Github)，通过说明我们找到[shield网站](https://shields.io),这个网站仅仅是加图标。具体如何添加要进入网站学习。
+## 小技巧git open
+* 通过安装git open
+```
+    npm i -g git-open
+```
+* 就可以通过`git open`命令打开你的远程仓库啦（用什么浏览器打开需要你在系统中设置默认浏览器即可）。比如我的默认浏览器是360浏览器，那么我在window10系统中设置默认浏览器为chrome就可以用chrome浏览器打开远程仓库了。
+## SVG的icon引入方式修改
+* 之前我们引入SVG的icon是通过script标签的方式，但是这样的话就无法在组件上来引入这个JS代码里面的script了，所以我们需要新增加一个svg.js文件。
+* 我们把script标签引入的信息通过浏览器打开可以看到是一堆js代码，我们把它拷贝下来放到svg.js文件里面。接着在icon.vue里面增加引入svg的import，只需要在icon.vue中引入代码，然后把script注释或者删除掉就完成了
+```
+    import './svg'
+```
+* 现在运行下面代码也是可以执行的
+```
+npx parcel index.html --no-cache
+```
+## 为了以后parcel后面忘记增加index.html，我们就把命令写到scripts里面
+* 在package.json里面增加代码，这样我们就只需要运行`npm start`就可以了，省去了很多命令。
+```
+  "scripts": {
+    "start": "npx parcel index.html --no-cache",
+  },
+```
+## 其他学习参考
+* 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
+```
+curl -L 网站全称
+```
+
 
