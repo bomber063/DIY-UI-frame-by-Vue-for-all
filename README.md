@@ -123,6 +123,24 @@ npx parcel index.html --no-cache
     "start": "npx parcel index.html --no-cache",
   },
 ```
+## input需求分析
+* 一般可以有下面几种用例：
+    1. 输入（包括输入错了会报错，输入之前会有提示需要输入什么信息，输入后想清空）
+    2. 复制/粘贴
+    3. 键盘Tab空位
+    4. 敲击回车
+    5. 不可输入
+* input的状态：
+    1. normal普通状态
+    2. [focus](https://developer.mozilla.org/en-US/docs/Web/API/Element/focus_event)状态,focus事件在元素获取焦点时触发
+    3. [hover](https://developer.mozilla.org/zh-CN/docs/Web/CSS/:hover),适用于用户使用指示设备虚指一个元素（没有激活它）的情况
+    4. disable,虽然可以看见文字，但是不能输入信息。
+    5. readonly,虽然可以看见写的文字，但是不能修改。这个跟disable差不多。
+    6. error，错误提示，当用户输入了错误信息后提示给用户的状态（error里面可以有focus或hover）
+    7. success，写的没有问题，正确状态，（success里面可以有focus或hover）
+    * 所以上面一般有15种状态——12345,4（6789,10），5（11，12，13,14,15）,但是这里只做10中状态，也就是success暂时不做，因为跟normal很像，只是修改了颜色而已。
+    * 另外可能还有warning等其他状态，这些也暂时不做。
+
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
 ```
