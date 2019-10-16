@@ -6,10 +6,11 @@
 <script>
     import './svg'
     export default {
+        name:'GuluIcon',
         props:['name']
     }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
     .g-icon {
         vertical-align: -0.15em;
         width: 1em;

@@ -140,6 +140,152 @@ npx parcel index.html --no-cache
     7. success，写的没有问题，正确状态，（success里面可以有focus或hover）
     * 所以上面一般有15种状态——12345,4（6789,10），5（11，12，13,14,15）,但是这里只做10中状态，也就是success暂时不做，因为跟normal很像，只是修改了颜色而已。
     * 另外可能还有warning等其他状态，这些也暂时不做。
+## input样式
+* 首先删除或者注释掉app.js里面的测试代码，因为我们已经在src/button.test.js里面测试了。
+* 创建一个input.vue文件，里面的内容就写上简单的template，script和style
+```
+<template>
+    <div>
+        <input type="text">
+    </div>
+</template>
+
+<script>
+    export default {
+    }
+</script>
+
+<style lang="scss">
+    
+</style>
+```
+* 然后从app.js引入它
+```
+import Input from './input'
+
+Vue.component('g-input', Input)
+```
+* 需要注意新建的组件的标签必须要写出闭合标签，不然可能会报错，比如
+```
+    <g-input></g-input>//这个是不会出错的
+    <g-input/>//这个会出错
+```
+* 因为vue的文档说过vue的模板使用的语法是html语法——[Vue.js 使用了基于 HTML 的模板语法](https://cn.vuejs.org/v2/guide/syntax.html#%E5%8E%9F%E5%A7%8B-HTML),**而这里并没有说[xml语法](https://www.runoob.com/xml/xml-syntax.html)（xml语法是必须要自闭合,而html有些自定义标签可以不用自闭合）**
+* 在使用name之前安装一个[vue开发者工具——Vue.js devtools](https://chrome.google.com/webstore/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd),可以在[chrome商城](https://chrome.google.com/webstore/category/extensions)里面**搜索vue-js**就可以找到了。安装之后你在chrome的开发者工具中就可以看到Vue了。他可以通过**组件的形式**让你看到各个标签，比如原生的element要直观和方便。
+### 使用Vue的name
+* 这时候我们可以通过[name](https://cn.vuejs.org/v2/api/#name),指定 name 选项的一个好处是便于调试。有名字的组件有更友好的警告信息。另外，当在有 vue-devtools，通过提供 name 选项，可以获得更有语义信息的组件树。比如我们把input.vue里面的增加name是'你好',那么在vue-devtools中我么就可以看到你好这个组件名字了
+```
+<script>
+    export default {
+        name:'你好'
+    }
+</script>
+```
+* 另外如果用**短横线命名的名字会被转换为驼峰命名的文字显示在vue-devtools上**，比如gulu-in会被转换为guluIn
+```
+<script>
+    export default {
+        name:'gulu-in'
+    }
+</script>
+```
+* 我们把其他的组件都使用name来修改名字。
+```
+button.vue里面修改为name:GuluButton
+button-group.vue里面修改为name：GuluButtonGroup
+icon.vue里面修改为name:GuluIcon
+```
+* name还有另外一个作用以后用到的时候再说明。
+### scss的变量语法
+* [变量 $](https://www.sass.hk/docs/),SassScript 最普遍的用法就是变量，变量以美元符号开头，赋值方法与 CSS 属性的写法一样：
+```
+$width: 5em;
+```
+* 直接使用即调用变量：
+```
+#main {
+  width: $width;
+}
+```
+### 使用scoped
+* [scoped](https://cn.vuejs.org/v2/guide/comparison.html#%E7%BB%84%E4%BB%B6%E4%BD%9C%E7%94%A8%E5%9F%9F%E5%86%85%E7%9A%84-CSS),这个可选 scoped 属性会自动添加一个唯一的属性 (比如 data-v-21e5b78) 为组件内 CSS 指定作用域，编译的时候 .list-container:hover 会被编译成类似 .list-container[data-v-21e5b78]:hover
+* 它可以解决与别的名字重名的问题。
+* 比如我把input.vue里面的style加上这个scoped
+```
+<style lang="scss" scoped>
+```
+* 会在浏览器里面显示为
+```
+<div data-v-c69b09 class="wrapper" style="margin: 20px;">
+    <input data-v-c69b09 type="text">
+</div>
+```
+* 我们在浏览器上再看下源代码
+```
+.wrapper > input[data-v-c69b09] {
+  height: 32px;
+  border: 1px solid #999;
+```
+* 所以添加了scoped之后Vue会做两件事情：
+    1. 它会把里面所有有style属性的选择器中加上data-v-c69b09这个属性，这个就是这个组件的唯一ID。
+    2. 它里面的所有子元素如果有style属性的选择器上加上data-v-c69b09这个属性。
+* 但是svg里面的use没有，因为use是不能加样式的。
+* 推荐在每一个Vue组件都加上这么一个属性
+* 加了之后会有一个缺点，等遇到了这个缺点在说明
+### 继续完善样式
+#### 这个传值我总是弄错，为了便于区分我用valuea代替自定义变量。
+* 我们给这个input一个初始值张三，在外面的valuea是一个自定义属性变量名字，可以赋值为张三，这里张三是字符串。
+```
+    <g-input valuea=张三></g-input>
+```
+* 而input.vue组件内部的value是CSS的属性，并且声明了props的变量属性valuea，然后用v-bind:就是相当于使用了JS语法，把自定义的属性变量valuea（这个变量已经被赋值为张三）赋值给CSS属性value。
+```
+<template>
+    <div class="wrapper">
+        <input v-bind:value='valuea' type="text">
+    </div>
+</template>
+
+<script>
+    export default {
+        name:'GuluInput',
+        props:{
+            valuea: {
+                type: String
+            }
+        }
+    }
+</script>
+```
+#### disabled属性
+* [disabled](https://developer.mozilla.org/zh-CN/docs/Mozilla/Tech/XUL/Attribute/disabled),如果这个元素的disabled属性被设置为true，表示元素被禁用，被禁用的属性在页面上通常会显示灰色文本，它无法响应用户的操作，它也无法得到光标。
+* 为了区分CSS属性和自定义属性，我把自定义属性后面增加一个a，也就是disableda
+* 另外还要记得有冒号代表JS代码，没有冒号代表字符串。**不管是在组件内部还是外部**
+* 外面的index.html上面的代码,这里的:disableda="true"可以直接写成disableda，因为HTML语法就是如果有一个属性那么就是true,就是你给了default:false，它也会是true
+```
+    <g-input valuea="李四" :disableda="true"></g-input>
+    <g-input valuea="李四" disableda></g-input>//这个是也没问题的
+```
+* 在input.vue里面
+```
+<template>
+    <div class="wrapper">
+        <input v-bind:value='valuea' :disabled=disableda   type="text">
+    </div>
+</template>
+<script>
+    export default {
+        props:{
+            disableda:{
+                type:Boolean,
+                default:false
+            }
+        }
+    }
+</script>
+```
+                                                                                           
+                                                                                           然而，这个元素仍然能够响应鼠标事件，如果要启用这个元素，把disabled设置为false
 
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)

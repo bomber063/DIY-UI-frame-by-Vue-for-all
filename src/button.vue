@@ -13,6 +13,7 @@
 <script>
     import Icon from './icon'
     export default {
+        name:'GuluButton',
         components:{
           'g-icon':Icon
         },
@@ -33,7 +34,7 @@
         }
     }
 </script>
-<style lang="scss">
+<style lang="scss" scoped>
     .g-button{
         vertical-align: top;
         display: inline-flex;
