@@ -134,8 +134,8 @@ npx parcel index.html --no-cache
     1. normal普通状态
     2. [focus](https://developer.mozilla.org/en-US/docs/Web/API/Element/focus_event)状态,focus事件在元素获取焦点时触发
     3. [hover](https://developer.mozilla.org/zh-CN/docs/Web/CSS/:hover),适用于用户使用指示设备虚指一个元素（没有激活它）的情况
-    4. disable,虽然可以看见文字，但是不能输入信息。
-    5. readonly,虽然可以看见写的文字，但是不能修改。这个跟disable差不多。
+    4. [disable](https://developer.mozilla.org/zh-CN/docs/Mozilla/Tech/XUL/Attribute/disabled),虽然可以看见文字，但是不能输入信息。
+    5. [readonly](https://developer.mozilla.org/en-US/docs/Archive/Mozilla/XUL/Property/readOnly),虽然可以看见写的文字，但是不能修改。这个跟disable差不多。但是它可以聚焦（focus），disable聚焦（focus）都无法实现。如果设置为true，则用户无法修改元素的值。
     6. error，错误提示，当用户输入了错误信息后提示给用户的状态（error里面可以有focus或hover）
     7. success，写的没有问题，正确状态，（success里面可以有focus或hover）
     * 所以上面一般有15种状态——12345,4（6789,10），5（11，12，13,14,15）,但是这里只做10中状态，也就是success暂时不做，因为跟normal很像，只是修改了颜色而已。
@@ -284,9 +284,103 @@ $width: 5em;
     }
 </script>
 ```
-                                                                                           
-                                                                                           然而，这个元素仍然能够响应鼠标事件，如果要启用这个元素，把disabled设置为false
+#### readonly属性
+* 为了区分CSS属性和自定义属性，我把自定义属性后面增加一个a，也就是readonlya
+* 在input.vue里面
+```
+<template>
+    <div class="wrapper">
+        <input v-bind:value='valuea' :disabled='disableda' :readonly="readonlya"  type="text">
+    </div>
+</template>
 
+<script>
+    export default {
+        props:{
+            readonlya:{
+                type:Boolean,
+                default: false
+            }
+        }
+    }
+</script>
+```
+* 外面的index.html上面的代码
+```
+    <g-input valuea="李四" readonlya></g-input>
+```
+#### error属性
+* 为了区分CSS属性和自定义属性，我把自定义属性后面增加一个a，也就是errora
+* 在input.vue里面,这里的`:class="{error:errora}`,如果你的自定义属性是error，就可以用析构的语法简写为`:class="{error}`
+```
+<template>
+    <div class="wrapper" :class="{error:errora}">
+        <input v-bind:value='valuea' :disabled='disableda' :readonly="readonlya" type="text">
+    </div>
+</template>
+
+<script>
+    import Icon from './icon'
+    export default {
+        props:{
+            errora:{
+                type:String
+            }
+        }
+    }
+</script>
+```
+* 外面的index.html上面的代码
+```
+    <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>
+```
+#### input里面局部注册Icon
+* 前面的app.js里面在Vue上面的注册都是[全局注册](https://cn.vuejs.org/v2/guide/components-registration.html)，比如
+```
+import Button from './button'
+
+Vue.component('g-button', Button)
+```
+* **全局注册**使用标签都是使用写好的名字，比如上面的就是用**g-button这个自义定标签**。
+* 在input.vue**局部注册**icon.vue,这的**标签名字就是components后面的名字Icon**。
+```
+<template>
+    <div class="wrapper" :class="{error:errora}">
+        <Icon name="setting"></Icon>
+    </div>
+</template>
+
+<script>
+    import Icon from './icon'
+    export default {
+        components:{Icon},
+        }
+    }
+</script>
+```
+#### 使用template而不使用div
+* 我们需要在出现错误的时候出现icon，也就是error的时候在出现icon，那么就需要用v-if，此时还需要把error的错误信息传进来。所以在input.vue中写成这样
+```
+        <Icon v-if="errora" name="setting"></Icon>
+        <span v-if="errora">{{errora}}</span>
+```
+* 如果你想省略掉一个v-if就需要在这两个标签（Icon和span）外面写一个div标签，但是div标签是block的，会换行，那么如果改成template就不会换行了.
+```
+        <template v-if="errora">
+            <Icon name="setting"></Icon>
+            <span>{{errora}}</span>
+        </template>
+```
+#### cursor鼠标样式
+* 给不能够点击的disabled和readonly加上not-allowed的样式
+```
+            &[disabled],&[readonly]{
+                border-color: #ccc;
+                color: #ccc;
+                cursor: not-allowed;
+            }
+```                                                                                          
+* 然而，这个元素仍然能够响应鼠标事件，如果要启用这个元素，把disabled设置为false
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
 ```

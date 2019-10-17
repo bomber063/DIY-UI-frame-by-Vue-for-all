@@ -29,14 +29,25 @@
             margin:20px;
         }
     </style>
+    <style>
+        .box{
+            margin:20px;
+        }
+    </style>
     <title>轱辘</title>
 </head>
 <body>
 <div id="app">
-    <g-input valuea="张三"></g-input>
-    <g-input valuea="李四" disableda></g-input>
+    <div class="box">
+    <g-input valuea="张三" disableda></g-input>
+    <g-input valuea="李四" readonlya></g-input>
+    <g-input valuea="王五" ></g-input>
+    </div>
+    <div class="box">
+    <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>
+    </div>
 
-    <div style="margin:20px;">
+    <div class="box">
         <g-button :loadings="loading1" v-on:click="loading1=!loading1">
             按钮
         </g-button>

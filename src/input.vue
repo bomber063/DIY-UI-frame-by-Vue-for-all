@@ -1,11 +1,18 @@
 <template>
-    <div class="wrapper">
-        <input v-bind:value='valuea' :disabled='disableda'   type="text">
+    <div class="wrapper" :class="{error:errora}">
+        <input v-bind:value='valuea' :disabled='disableda' :readonly="readonlya" type="text">
+        <template v-if="errora">
+            <Icon name="setting"></Icon>
+            <span>{{errora}}</span>
+        </template>
     </div>
 </template>
 
 <script>
+    import Icon from './icon'
+    console.log(Icon)
     export default {
+        components:{Icon},
         name:'GuluInput',
         props:{
             valuea: {
@@ -14,6 +21,13 @@
             disableda:{
                 type:Boolean,
                 default:false
+            },
+            readonlya:{
+                type:Boolean,
+                default: false
+            },
+            errora:{
+                type:String
             }
         }
     }
@@ -34,6 +48,7 @@
     $border-radius:4px;
     $font-size:14px;
     $box-shadow-color:rgba(0,0,0,0.5);
+    $red:#F1453D;
     .wrapper{
         font-size:$font-size;
         display: inline-block;
@@ -50,11 +65,16 @@
                 box-shadow:inset 0 1px 3px $box-shadow-color;
                 outline: none;
             }
-            &[disabled]{
+            &[disabled],&[readonly]{
                 border-color: #ccc;
                 color: #ccc;
+                cursor: not-allowed;
             }
-
+        }
+        &.error{
+            > input{
+                border-color:$red;
+            }
         }
 
     }
