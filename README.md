@@ -381,6 +381,43 @@ Vue.component('g-button', Button)
             }
 ```                                                                                          
 * 然而，这个元素仍然能够响应鼠标事件，如果要启用这个元素，把disabled设置为false
+#### 增加Icon的错误样式
+* 通过iconfont增加错误的提示样式，可以是一个**感叹号**。
+* 这里修改颜色**可以直接用svg的语法**,比如`fill='red'`
+```
+        <Icon name="error" fill="red"></Icon>
+```
+* 这里我统一用一个class选择器和scss属性来修改颜色
+```
+<template>
+    <div class="wrapper" :class="{error:errora}">
+        <input v-bind:value='valuea' :disabled='disableda' :readonly="readonlya" type="text">
+        <template v-if="errora">
+            <Icon name="error" class="icon-error"></Icon>
+            <span>{{errora}}</span>
+        </template>
+    </div>
+</template>
+
+<style>
+        .icon-error{
+            fill:$red;
+        }
+</style>
+```
+#### 这里用连接行（join line）快捷键压缩style代码
+* 由于input的SCSS代码开始有点多了，所以用连接行把他们都缩进为一行，WebStorm默认的快捷键是Ctrl+Shift+J，我这里增加了Shift+J也是这个快捷键。
+* 为了防止格式化代码后还原，我们需要在WebStorm中把CSS和SCSS保持当行块结构，通过设置->编辑器->Code Style->Style Sheets->CSS和SCSS里面的Keep single-line blocks打钩即可
+* 但是这里**我暂时先不简化为一行，因为我怕自己不习惯**。
+#### 增加一点间隙
+* 我们使用了[:not](https://developer.mozilla.org/zh-CN/docs/Web/CSS/:not)和[:last-child](https://developer.mozilla.org/zh-CN/docs/Web/CSS/:last-child)两个伪类，不是最后一个子类的增加右边的margin
+```
+    .wrapper {
+        >:not(:last-child){
+            margin-right:0.5em;
+        }
+    }
+```
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
 ```
