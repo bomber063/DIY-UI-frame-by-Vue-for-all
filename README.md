@@ -418,6 +418,306 @@ Vue.component('g-button', Button)
         }
     }
 ```
+## input标签的事件
+* input标签有哪些事件可以参考[input标签的事件汇总](https://www.cnblogs.com/pei123/p/9098650.html)
+* 首先原生有很多[事件](https://developer.mozilla.org/zh-CN/docs/Web/Events),其中有一个是[原生的change事件](https://developer.mozilla.org/zh-CN/docs/Web/Events/change),change 事件被input标签, select标签, 和textarea标签 元素触发, 当用户提交对元素值的更改时。与  input 事件不同，change 事件不一定会对元素值的每次更改触发。如果是普通的input标签的change事件，文本修改后需要把鼠标移开点击之后才会触发，而input事件不需要把鼠标移开点击。
+### 这里绑定change事件
+* 首先在input.vue里面的代码`@change="$emit('changea',$event)"`,这里前面的`@`是`v-on:`的缩写，前面的change是原生的change事件，后面的changea（为了便于区分所以后面加了一个a）是自定义的一个事件，这个自定义的时间需要在外面index.html上传入，[$emit](https://cn.vuejs.org/v2/api/#vm-emit)是触发一个当前的实例事件，最后面的[$event](https://cn.vuejs.org/v2/guide/events.html#%E5%86%85%E8%81%94%E5%A4%84%E7%90%86%E5%99%A8%E4%B8%AD%E7%9A%84%E6%96%B9%E6%B3%95),有时也需要在内联语句处理器中访问原始的 DOM 事件。可以用特殊变量 $event 把它传入方法
+* 在监听原生 DOM 事件时，方法以事件为唯一的参数。如果使用内联语句，语句可以访问一个 [$event](https://cn.vuejs.org/v2/api/#errorHandler) 属性：v-on:click="handle('ok', $event)"
+* 如果没有这个$event就无法获取到原生事件传入的值。
+```
+<template>
+    <div class="wrapper" :class="{error:errora}">
+        <input v-bind:value='valuea' :disabled='disableda' :readonly="readonlya" type="text" @change="$emit('changea',$event)">
+        </template>
+    </div>
+</template>
+```
+* 在index.html上代码
+```
+    <g-input valuea="王五" @changea="inputChange"></g-input>
+```
+* 这里把自定义事件赋值为inputChange,而这个inputChange需要看全局的methods里面找，也就是app.js里面,这里的e也就是前面的$event。通过e.target.value就可以获取到传入的文本。这个参数e叫什么无所谓，也可以叫其他的参数。
+```
+new Vue({
+    el: '#app',
+    data: {
+        loading1: false,
+        loading2: true,
+        loading3: false
+    },
+    methods:{
+        inputChange(e){
+            console.log(e.target.value)
+        }
+    }
+})
+```
+* 你还可以传第三个参数，也就是
+```
+<template>
+    <div class="wrapper" :class="{error:errora}">
+        <input v-bind:value='valuea' :disabled='disableda' :readonly="readonlya" type="text" @change="$emit('changea',$event,'hi')">
+        </template>
+    </div>
+</template>
+```
+* 这样通过下面参数a就可以获取到这第三个参数`hi`,**但是一般不需要传入第三个参数。只需要前面两个参数即可，第一个参数是自定义事件的名字，第二个参数是原生v-on:绑定的事件的一个对象**。
+```
+new Vue({
+    el: '#app',
+    data: {
+        loading1: false,
+        loading2: true,
+        loading3: false
+    },
+    methods:{
+        inputChange(e,a){
+            console.log(e.target.value)
+            console.log(a)
+        }
+    }
+})
+```
+## 测试用例
+### 测试valuea这个自定义属性
+* 因为自定义属性是valuea，它是传给了value,那么测试代码就写成
+```
+    it('可以接收value.', () => {
+        const Constructor = Vue.extend(Input)
+        const vm = new Constructor({
+            propsData: {
+                valuea: 'settings'
+            }
+        }).$mount()
+        const inputElement = vm.$el.querySelector('input')
+        expect(inputElement.value).to.equal('settings')
+        vm.$destroy()
+    })
+```
+* 这里用到点操作符
+```
+ expect(inputElement.value).to.equal('settings')
+```
+* 而不是去获取标签的属性，这样会出错。
+```
+       expect(inputElement.getAttribute('value')).to.equal('settings')
+```
+* 因为如果在Vue里面如果用了v-bind:就是一个JS语法，大部分都是一个对象，所以要用点操作符来取信息。而前面的svg中的use标签的属性xlink:href应该是一个字符串。可能它不支持JS语法。
+```
+        expect(useElement.getAttribute('xlink:href')).to.equal('#i-settings')
+```
+### 测试disableda这个自定义属性
+* 跟前面的value一样
+```
+    it('可以接收disabled.', () => {
+        const Constructor = Vue.extend(Input)
+        const vm = new Constructor({
+            propsData: {
+                disableda: true
+            }
+        }).$mount()
+        const inputElement = vm.$el.querySelector('input')
+        expect(inputElement.disabled).to.equal(true)
+        vm.$destroy()
+    })
+```
+### 测试readonlya这个自定义属性
+* 这个属性虽然代码中input.vue中的readonly没有把o写成大写，但是这里测试用例的时候必须要写成大写，可能是这个API浏览器就这么规定的吧
+```
+    it('可以接收readOnly.', () => {
+        const Constructor = Vue.extend(Input)
+        const vm = new Constructor({
+            propsData: {
+                readonlya: true
+            }
+        }).$mount()
+        const inputElement = vm.$el.querySelector('input')
+        expect(inputElement.readOnly).to.equal(true)//需要注意这里的readOnly的O必须是大写的，可能是这个API就是这样规定的吧
+        vm.$destroy()
+    })
+```
+### 测试errora这个自定义属性
+* 因为input本省就已经传了name=error了,所以就不需要传入参数了。我们用的自定义属性是errora，我们这里传的是`你错了`
+```
+    it('可以接收error,并显示error的信息.', () => {
+        const Constructor = Vue.extend(Input)
+        const vm = new Constructor({
+            propsData: {
+                errora: '你错了'
+            }
+        }).$mount()
+        const inputElement = vm.$el.querySelector('use')
+        const spanElement=vm.$el.querySelector('span')
+        expect(inputElement.getAttribute('xlink:href')).to.equal('#i-error')//这个因为input本省就已经传了name=error了
+        expect(spanElement.innerHTML).to.equal('你错了')//这个因为我们用的自定义属性是errora，我们这里传的是'你错了'
+        vm.$destroy()
+    })
+```
+### 把以上的传参作为一个describe里面，并减少重复代码
+```
+    describe('props',()=>{
+        it('各种props',()=>{
+            
+        })
+    })
+```
+* 用到mocha的[hooks](https://mochajs.org/#hooks)，有before(), after(), beforeEach(), and afterEach()。
+* 声明构造函数和声明vm的代码提取到整个props的作用域中。
+* 把每次`$destroy()`提取到afterEach里面。
+* 这里只列出了一个value，代码变为
+```
+    describe('props', () => {
+        let vm
+        const Constructor = Vue.extend(Input)
+        afterEach(function() {
+            vm.$destroy()
+        });
+        it('可以接收value.', () => {
+            vm = new Constructor({
+                propsData: {
+                    valuea: 'settings'
+                }
+            }).$mount()
+            const inputElement = vm.$el.querySelector('input')
+            expect(inputElement.value).to.equal('settings')
+        })
+        ...
+    })
+```
+### 事件测试
+#### 先测试原生change事件
+* 首先要知道如何触发一个事件，比如change事件。我们在Google上面搜索js trigger change event ,可找到一个[说明——How can I trigger an onchange event manually? duplicate](https://stackoverflow.com/questions/2856513/how-can-i-trigger-an-onchange-event-manually),了解到[dispatchEvent](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/dispatchEvent)和[fireEvent](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/fireEvent),不过fireEvent是非标准的，所已经尽量不要用它。
+* 在vue实例上我们测试触发一个事件，比如这里的自定义事件是changea。
+```
+        it('支持change事件',()=>{
+            vm = new Constructor({}).$mount()
+
+            const callback=sinon.fake()
+            vm.$on('changea',callback)
+
+            vm.$emit('changea',callback)
+            expect(callback).to.have.been.called
+        })
+```
+* 但是因为目前我们涉及到原生的change事件，那么就需要用到原生JS的触发事件的API，那就是前面说的[dispatchEvent](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/dispatchEvent)，这样就是
+    1. 先触发原生event对应的change事件.
+    2. 然后根据input.vue上的代码,一旦触发原生的change事件就会去`$emit('changea',$event)`,也就是触发自定义的changea事件。
+    3. 然后这个callback就会被调用，那么sinon.fake()这个Mock函数就通知到位。
+    ```
+    <input :value='valuea' :disabled='disableda' :readonly="readonlya" type="text" @change="$emit('changea',$event)">
+    ```
+```
+        it('支持change事件',()=>{
+            vm = new Constructor({}).$mount()
+
+            const callback=sinon.fake()
+            
+            vm.$on('changea',callback)
+            var event = new Event('change');
+            let inputElement=vm.$el.querySelector('input')
+            inputElement.dispatchEvent(event)
+            
+            expect(callback).to.have.been.called
+        })
+```
+* 我们通过console.log(event)，这个event就是上面代码的var event这个变量存的事件，在测试代码input.test.js里面打出只有一个值，就是不可信
+```
+LOG: Event{isTrusted: false}
+```
+* 我们把代码放到app.js里面在浏览器的开发者工具控制台打出可以看到是一个对象哈希。有很多属性，当然也包括了前面的`Event{isTrusted: false}`
+* 我们先通过在app.js上面使用created函数来创建并在开发者工具中查看，有几点注意
+    1. 这需要用延迟的异步函数setTimeout，因为在created的周期阶段，子组件里面的标签还不一定渲染好了，如果不用setTimeout就获取不到子组件里面的信息。
+    2. 因为有很多input标签，用到change事件的是第五个input标签，也就是数组第四个元素，这里的this是整个Vue，所以取到第五个子组件`this.$children[4]`,然后第五个的根原生DOM元素就是`$el`，最后选择到input整个选择器。
+    3. 接着用dispatchEvent触发原生的change事件，子组件就会去触发自定义的changea事件。通过index.html里面的`@changea="inputChange"`就会去触发app.js里面的methods对应的inputChange。然后就用参数，比如e可以获取到这个let event的event了，也就是原生的change事件。
+    4.在开发者工具我们可以看到当第一次运行的时候（JS代码产生的）是isTrusted: false，当你修改input里面的值的时候（用户输入产生的），就会显示isTrusted: true
+```
+    created(){
+        setTimeout(()=>{
+            let event = new Event('change');
+            let inputElement=this.$children[4].$el.querySelector('input')
+            inputElement.dispatchEvent(event)
+            console.log('hi')
+        },1000)
+
+    },
+    methods:{
+        inputChange(e){
+            console.log(e)
+        }
+    }
+```
+* 原生change触发Vue的自定义changea事件成功了，那么怎么拿到原生change事件传的这个值是个问题。
+* 我们通过[sinon-chai文档](https://github.com/domenic/sinon-chai),通过查看我们知道这个参数通过calledWith来查看。
+```
+        it('支持change事件',()=>{
+            vm = new Constructor({}).$mount()
+
+            const callback=sinon.fake()
+            vm.$on('changea',callback)
+            var event = new Event('change');
+            let inputElement=vm.$el.querySelector('input')
+
+            inputElement.dispatchEvent(event)
+            expect(callback).to.have.been.calledWith(event)
+        })
+```
+#### 按照change事件的方式去增加blur,input,focus事件
+* input.vue上面
+```
+        <input :value='valuea' :disabled='disableda' :readonly="readonlya" type="text"
+               @change="$emit('changea',$event)"
+               @input="$emit('inputa',$event)"
+               @focus="$emit('focusa',$event)"
+               @blur="$emit('blura',$event)">
+```
+* blur事件
+```
+        it('支持blur事件',()=>{
+            vm = new Constructor({}).$mount()
+
+            const callback=sinon.fake()
+            
+            vm.$on('blura',callback)
+            var event = new Event('blur');
+            let inputElement=vm.$el.querySelector('input')
+            inputElement.dispatchEvent(event)
+            
+            expect(callback).to.have.been.calledWith(event)
+        })
+```
+* focus事件
+```
+        it('支持focus事件',()=>{
+            vm = new Constructor({}).$mount()
+
+            const callback=sinon.fake()
+            vm.$on('focusa',callback)
+
+            var event = new Event('focus');
+            let inputElement=vm.$el.querySelector('input')
+
+            inputElement.dispatchEvent(event)
+
+            expect(callback).to.have.been.calledWith(event)
+        })
+```
+* 
+```
+        it('支持input事件',()=>{
+            vm = new Constructor({}).$mount()
+
+            const callback=sinon.fake()
+            vm.$on('inputa',callback)
+
+            var event = new Event('input');
+            let inputElement=vm.$el.querySelector('input')
+
+            inputElement.dispatchEvent(event)
+
+            expect(callback).to.have.been.calledWith(event)
+        })
+```
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
 ```

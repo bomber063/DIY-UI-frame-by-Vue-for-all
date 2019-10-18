@@ -9,7 +9,6 @@ Vue.component('g-icon', Icon)
 Vue.component('g-button-group', ButtonGroup)
 Vue.component('g-input', Input)
 
-
 // console.log(Button.props.loading)
 new Vue({
     el: '#app',
@@ -17,8 +16,42 @@ new Vue({
         loading1: false,
         loading2: true,
         loading3: false
+    },
+    created(){
+        setTimeout(()=>{
+            // var a=this.$children[4].$el
+            // console.log(this)
+            let event = new Event('change');
+            let inputElement=this.$children[4].$el.querySelector('input')
+            // console.log(inputElement)
+            inputElement.dispatchEvent(event)
+            console.log('hi')
+        },1000)
+
+    },
+    methods:{
+        inputChange(e){
+            console.log(e)
+        }
     }
 })
+
+// let vm
+// const Constructor = Vue.extend(Input)
+//
+//
+//     vm = new Constructor({}).$mount()
+//     vm.$on('changea',function(){console.log(1)})
+//     // vm.$emit('changea',$event)
+//     // var a=vm.$children('input').$on('change',callback)
+//     var event = new Event('change');
+//     let inputElement=vm.$el.querySelector('input')
+//     inputElement.addEventListener('change', function (e) { console.log(e) }, false);
+//     inputElement.dispatchEvent(event)
+//     console.log(event)
+//     // vm.$emit('changea',callback)
+
+
 // console.log(a.$el)
 
 // console.log(a.$el.data===a.data)

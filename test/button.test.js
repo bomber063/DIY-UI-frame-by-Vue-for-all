@@ -21,6 +21,7 @@ describe('Button', () => {
         }).$mount()
         const useElement = vm.$el.querySelector('use')
         expect(useElement.getAttribute('xlink:href')).to.equal('#i-settings')
+        // expect(useElement['xlink:href']).to.equal('#i-settings')
         vm.$destroy()
     })
     it('可以设置loading.', () => {
