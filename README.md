@@ -538,7 +538,7 @@ new Vue({
     })
 ```
 ### 测试errora这个自定义属性
-* 因为input本省就已经传了name=error了,所以就不需要传入参数了。我们用的自定义属性是errora，我们这里传的是`你错了`
+* 因为input本身就已经传了name=error了,所以就不需要传入参数了。我们用的自定义属性是errora，我们这里传的是`你错了`
 ```
     it('可以接收error,并显示error的信息.', () => {
         const Constructor = Vue.extend(Input)
@@ -627,7 +627,7 @@ LOG: Event{isTrusted: false}
 ```
 * 我们把代码放到app.js里面在浏览器的开发者工具控制台打出可以看到是一个对象哈希。有很多属性，当然也包括了前面的`Event{isTrusted: false}`
 * 我们先通过在app.js上面使用created函数来创建并在开发者工具中查看，有几点注意
-    1. 这需要用延迟的异步函数setTimeout，因为在created的周期阶段，子组件里面的标签还不一定渲染好了，如果不用setTimeout就获取不到子组件里面的信息。
+    1. 这需要用延迟的异步函数setTimeout，因为在created的周期阶段，子组件里面的标签还不一定渲染好了，如果不用setTimeout就获取不到子组件里面的信息。具体说明可以见[vue父组件获取子组件数据对象](https://segmentfault.com/q/1010000017405622)和[生命周期图示](https://cn.vuejs.org/v2/guide/instance.html#%E7%94%9F%E5%91%BD%E5%91%A8%E6%9C%9F%E5%9B%BE%E7%A4%BA)
     2. 因为有很多input标签，用到change事件的是第五个input标签，也就是数组第四个元素，这里的this是整个Vue，所以取到第五个子组件`this.$children[4]`,然后第五个的根原生DOM元素就是`$el`，最后选择到input整个选择器。
     3. 接着用dispatchEvent触发原生的change事件，子组件就会去触发自定义的changea事件。通过index.html里面的`@changea="inputChange"`就会去触发app.js里面的methods对应的inputChange。然后就用参数，比如e可以获取到这个let event的event了，也就是原生的change事件。
     4.在开发者工具我们可以看到当第一次运行的时候（JS代码产生的）是isTrusted: false，当你修改input里面的值的时候（用户输入产生的），就会显示isTrusted: true
@@ -702,7 +702,7 @@ LOG: Event{isTrusted: false}
             expect(callback).to.have.been.calledWith(event)
         })
 ```
-* 
+* input事件
 ```
         it('支持input事件',()=>{
             vm = new Constructor({}).$mount()
