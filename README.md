@@ -763,6 +763,32 @@ LOG: Event{isTrusted: false}
             })
         })
 ```
+## karma,mocha,chai分别是什么作用
+* [karma](https://karma-runner.github.io/latest/config/configuration-file.html)它有一个配置是karma.confi.js,它**主要是用来打开浏览器**，通过代码可以看到是无头的Chrome浏览器。打开浏览器才可以测试用例
+```
+        browsers: ['ChromeHeadless'],
+```
+* 然后引入[mocha](https://mochajs.org/)和[sinon-chai](https://github.com/domenic/sinon-chai)
+```
+        frameworks: ['mocha', 'sinon-chai'],
+```
+* 引入mocha之后就会有describe和it两个函数。在测试的时候，也就是`npm run test`的时候，这个函数都是直接挂在window上面的全局函数。
+* 引入sinon-chai就是同时引入sinon和chai。sinon就是做fake用的，比如`sinon.fake()`,引入的chai.js就是使用expect断言语句。并且chai.js因为sinon-chai这个东西，所以可以和sinon一起合作。于是有了`calledWith`。他是在chai上面添加的api。
+* 然后通过files把测试用例引入到浏览器里面去
+```
+        files: [
+            'dist/**/*.test.js',
+            'dist/**/*.test.css'
+        ],
+```
+* 然后呈现的报告，也就是运行npm run test之后在node.js上面呈现的字就是由report提供的,默认有一个`progress`，`progress`就是会报告一些进程。还有一个`dots`，`dots`它呈现出来的效果除了会报告一些进程，还会呈现一些点,比如`........`，成功的都是一个点。还提供了一个网站`https://npmjs.org/browse/keyword/karma-reporter`，里面有各种报告的呈现形式。这个以后再去探索。一般用默认的progress就OK了。
+```
+        // test results reporter to use
+        // possible values: 'dots', 'progress'
+        // available reporters: https://npmjs.org/browse/keyword/karma-reporter
+        reporters: ['progress'],
+```
+
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
 ```
