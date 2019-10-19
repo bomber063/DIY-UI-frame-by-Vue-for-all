@@ -723,7 +723,7 @@ LOG: Event{isTrusted: false}
         frameworks: ['mocha', 'sinon-chai'],
 ```
 #### 这几个事件测试有很多重复代码，用forEach优化重复的代码
-* 用一个数组把它们放进去。我自己写的一个，这个还可以继续优化,需要特别注意，**在[]符号之前，let声明之后，必须要分号结束，如果没有分号结束会报错，**具体原因可以见[语法和数据类型](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Grammar_and_types)和[词法文法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Lexical_grammar)
+* 用一个数组把它们放进去。我自己写的一个，这个还可以继续优化,需要特别注意，**在[]符号之前，let声明之后，必须要分号结束，如果没有分号结束会报错**,具体原因可以见[语法和数据类型](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Grammar_and_types)和[词法文法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Lexical_grammar)
 ```
         it('支持change,input,blur,focus事件,我自己写的',()=>{
             vm = new Constructor({}).$mount()
