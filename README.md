@@ -773,7 +773,7 @@ LOG: Event{isTrusted: false}
         frameworks: ['mocha', 'sinon-chai'],
 ```
 * 引入mocha之后就会有describe和it两个函数。在测试的时候，也就是`npm run test`的时候，这个函数都是直接挂在window上面的全局函数。
-* 引入sinon-chai就是同时引入sinon和chai。sinon就是做fake用的，比如`sinon.fake()`,引入的chai.js就是使用expect断言语句。并且chai.js因为sinon-chai这个东西，所以可以和sinon一起合作。于是有了`calledWith`。他是在chai上面添加的api。
+* 引入sinon-chai就是同时引入[sinon](https://sinonjs.org/releases/v7.5.0/)和[chai](https://www.chaijs.com/)。sinon就是做fake用的，比如`sinon.fake()`,引入的chai.js就是使用expect断言语句。并且chai.js因为sinon-chai这个东西，所以可以和sinon一起合作。于是有了`calledWith`。他是在chai上面添加的api。
 * 然后通过files把测试用例引入到浏览器里面去
 ```
         files: [
