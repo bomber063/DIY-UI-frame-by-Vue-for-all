@@ -876,7 +876,7 @@ new Vue({
         <button @click="message=message+1">+1</button>
 ```
 #### 我们在用v-model实现双向绑定
-* 如果要用v-model，就必须使用value和input.因为子组件里面已经写了value和input了，但是原生的input触发的input也必须是input，不能是inputa，并且prop的value必须是value，不能是valuea。
+* [自定义组件v-model](https://cn.vuejs.org/v2/guide/components-custom-events.html#自定义组件的-v-model)中提到如果要用v-model，就必须使用value和input.因为子组件里面已经写了value和input了，但是原生的input触发的input也必须是input，不能是inputa，并且prop的value必须是value，不能是valuea。
 * index.html代码
 ```
     <g-input v-model="message"></g-input>
