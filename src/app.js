@@ -15,18 +15,25 @@ new Vue({
     data: {
         loading1: false,
         loading2: true,
-        loading3: false
+        loading3: false,
+        message:'hi'
     },
     created(){
-        setTimeout(()=>{
-            // var a=this.$children[4].$el
-            // console.log(this)
-            let event = new Event('change');
-            let inputElement=this.$children[4].$el.querySelector('input')
-            // console.log(inputElement)
-            inputElement.dispatchEvent(event)
-            console.log('hi')
-        },1000)
+        // setTimeout(()=>{
+        //     // var a=this.$children[4].$el
+        //     // console.log(this)
+        //     let event = new Event('change');
+        //     let inputElement=this.$children[4].$el.querySelector('input')
+        //     // console.log(inputElement)
+        //     inputElement.dispatchEvent(event)
+        //     console.log('hi')
+        // },1000)
+
+        // setInterval(()=>{
+        //     this.message=this.message+'1'
+        // },1000)
+
+
 
     },
     methods:{

@@ -788,7 +788,157 @@ LOG: Event{isTrusted: false}
         // available reporters: https://npmjs.org/browse/keyword/karma-reporter
         reporters: ['progress'],
 ```
+## 双向绑定
+* Vue很早之前是支持双向绑定的，后来不支持。目前我们的组件只支持传参和添加事件，暂时不支持双向绑定。
+* 通过[jsbin](https://jsbin.com/wokasuvewo/1/edit?html,js,output)我们生成一段代码
+* html上的代码为
+```
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.0.3/vue.js"></script>
+  
+</head>
+<body>
+  <div id='app'>
+    <input type="text" v-model='message'>
+    <p>
+      {{message}}
+    </p>
+  </div>
+</body>
+</html>
+```
+* JS上的代码为
+```
+var app=new Vue({
+  el:'#app',
+  data:{
+    message:'hi'
+  },
+  created(){
+    setInterval(()=>{
+    this.message=this.message+'!'
+  },1000)
+  }
+})
+```
+* 我们可以看到，**当用户输入信息的时候，对应的js代码会改变，当用created函数修改JS的时候，用户的输入内容也会改变**。
+* 我们的Vue怎么支持双向绑定呢，其实Vue是不支持双向绑定的，它只是做了一个语法糖，当用户用input的[v-model](https://cn.vuejs.org/v2/api/#v-model)的时候，其实相当于写了两个绑定：
+    1. 绑定value,这样就使得JS改变value这个属性对应的message的时候，也会改变用户输入的value。(相当于JS来改变用户的输入)
+    ```
+        <input type="text" :value=message>
+    ```
+    2. 绑定原生的input事件，当发生原生input事件的时候，把这个时间的值，也就是$event.target.value赋值给message。(相当于用户输入的信息改变JS)
+    ```
+        <input type="text" @input='message=$event.target.value'>
+      </div>
+    ```
+* 所以两个结合起来就是双向绑定啦，也就是用户输入的信息改变JS，同时JS也可以代表用户输入的信息。在[JSbin](https://jsbin.com/xavepahayi/1/edit?html,js,output)上可以查看效果。
+### 让自己的代码实现双向绑定
+* 首先一个组件上的 v-model 默认会利用**名为 value** 的 prop 和**名为 input 的事件**,但是我们之前的用的是valuea和inputa，所以是不可以使用v-model的。
+#### 先用valuea和inputa实现双向绑定 
+* 我们先用`:valuea`和`@inputa`来实现双向绑定。 因为我们子组件自定义的就是后面加一个a.
+* 在index.html上代码
+```
+    <g-input :valuea="message" @inputa="message=$event"></g-input>
+    <span>{{message}}</span>
 
+```
+* 在app.js上增加一个`message:'hi'`
+```
+new Vue({
+    el: '#app',
+    data: {
+        loading1: false,
+        loading2: true,
+        loading3: false,
+        message:'hi'
+    },
+    methods:{
+        inputChange(e){
+            console.log(e)
+        }
+    }
+})
+```
+* 在input.vue上面把`$event.target.value`传出去
+```
+           @input="$emit('inputa',$event.target.value)"
+```
+* 这样就实现了用户修改input的值的时候而自动更改JS变量
+* 继续增加代码使得JS变量更改后去修改用户的input值
+* 我们在index.html中代码增加如下，那么在点击+1的时候，input输入框里面的内容值也会通过时更改了。也就是实现了JS变量更改后去修改用户的input值。
+```
+        <button @click="message=message+1">+1</button>
+```
+#### 我们在用v-model实现双向绑定
+* 如果要用v-model，就必须使用value和input.因为子组件里面已经写了value和input了，但是原生的input触发的input也必须是input，不能是inputa，并且prop的value必须是value，不能是valuea。
+* index.html代码
+```
+    <g-input v-model="message"></g-input>
+```
+* input.vue中的部分代码
+```
+<template>
+    <div class="wrapper" :class="{error:errora}">
+        <input :value='value' :disabled='disableda' :readonly="readonlya" type="text"
+               @input="$emit('input',$event.target.value)"
+    </div>
+</template>
+
+<script>
+    import Icon from './icon'
+
+    export default {
+        components: {Icon},
+        name: 'GuluInput',
+        props: {
+            value: {
+                type: String
+            }
+        }
+    }
+</script>
+```
+* 这样就是v-model的双向绑定的效果。
+***
+* 在vue组件里面的template是不支持注释的。
+* 还有有一点需要注意：就是如果当前的value如果与更改后的value是一样的，那么他就不会变化了，要不然会无限循环的改变下去。这个是vue的一个dom diff过程。
+* 另外因为我们修改了`$event`这个传出去的信息，之前是传出去整个事件对象，而只是把这个时间对象对应的target.value值传出去，那么测试用例也需要修改，要不让无法通过。
+* 因为在测试用例上面这个事件没有target属性，并且它还是只读属性你不能修改，在浏览器里面它是会自动补全这个值的。比如你这样写就不行
+```
+    event.target={value:'hi'}
+```
+* 那么通过google搜索js new event set target,可以找到[How to set target property when simulating mouseclick in javascript?](https://stackoverflow.com/questions/27108094/how-to-set-target-property-when-simulating-mouseclick-in-javascript)使用了[Object.defineProperty](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty),该方法会直接在一个对象上定义一个新属性，或者修改一个对象的现有属性， 并返回这个对象。这里的event是在其定义的对象。target是要定义或修改的属性的名称。这个的value是默认的他的值。
+```
+  Object.defineProperty(event, 'target', {value: target, enumerable: true});
+```
+* 而我们需要他默认的这个value应该是`{value:'hi'}`
+* 测试用例删除掉其他非循环的重复代码，包括优化循环后的代码，并且把这个最后的calledWith修改为hi,* 默认情况下，使用 Object.defineProperty() 添加的属性值是不可修改的。夏敏的`enumerable: true`可以省略，不影响测试结果，因为这个是是否可以枚举的意思。最后我不太清楚为什么用Object.defineProperty就可以破除只读属性了。
+```
+        it('支持change,input,blur,focus事件,看了老师的视频之后结合自己的代码继续优化的代码',()=>{
+
+            ['change','input','blur','focus'].forEach((x)=>{
+                vm = new Constructor({}).$mount()
+
+                const callback=sinon.fake()
+
+                vm.$on(x+'a',callback)
+
+                var event = new Event(x);
+                Object.defineProperty(event, 'target', {value: {value:'hi'}, enumerable: true});
+
+                let inputElement=vm.$el.querySelector('input')
+                inputElement.dispatchEvent(event)
+                expect(callback).to.have.been.calledWith('hi')
+            })
+        })
+```
+***
 ## 其他学习参考
 * 这里插入一个小知识，运行下面命令可以查看网页的信息，[更多curl命令](https://www.jianshu.com/p/07c4dddae43a)
 ```

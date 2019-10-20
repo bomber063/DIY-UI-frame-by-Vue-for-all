@@ -64,33 +64,33 @@ describe('Input', () => {
         afterEach(function() {
             vm.$destroy()
         })
-        it('支持change,input,blur,focus事件,我自己写的',()=>{
-            vm = new Constructor({}).$mount()
-            //
-            const callback=sinon.fake()
-            //
-            vm.$on('changea',callback)
-            vm.$on('blura',callback)
-            vm.$on('focusa',callback)
-            vm.$on('inputa',callback)
-            //
-             let event1 = new Event('change');
-             let event2 = new Event('blur');
-             let event3 = new Event('focus');
-             let event4 = new Event('input');
-             // let events=[event1,event2,event3,event4];
-
-            let inputElement=vm.$el.querySelector('input');
-            [event1,event2,event3,event4].forEach((x)=>{
-                inputElement.dispatchEvent(x)
-                expect(callback).to.have.been.calledWith(x)
-            })
-
-            //         events.forEach((x)=>{//把数组放到一个变量里面测试就不报错
-            //     inputElement.dispatchEvent(x)
-            //     expect(callback).to.have.been.calledWith(x)
-            // })
-        })
+        // it('支持change,input,blur,focus事件,我自己写的',()=>{
+        //     vm = new Constructor({}).$mount()
+        //     //
+        //     const callback=sinon.fake()
+        //     //
+        //     vm.$on('changea',callback)
+        //     vm.$on('blura',callback)
+        //     vm.$on('focusa',callback)
+        //     vm.$on('inputa',callback)
+        //     //
+        //      let event1 = new Event('change');
+        //      let event2 = new Event('blur');
+        //      let event3 = new Event('focus');
+        //      let event4 = new Event('input');
+        //      // let events=[event1,event2,event3,event4];
+        //
+        //     let inputElement=vm.$el.querySelector('input');
+        //     [event1,event2,event3,event4].forEach((x)=>{
+        //         inputElement.dispatchEvent(x)
+        //         expect(callback).to.have.been.calledWith(x)
+        //     })
+        //
+        //     //         events.forEach((x)=>{//把数组放到一个变量里面测试就不报错
+        //     //     inputElement.dispatchEvent(x)
+        //     //     expect(callback).to.have.been.calledWith(x)
+        //     // })
+        // })
         it('支持change,input,blur,focus事件,看了老师的视频之后结合自己的代码继续优化的代码',()=>{
 
             ['change','input','blur','focus'].forEach((x)=>{
@@ -101,63 +101,65 @@ describe('Input', () => {
                 vm.$on(x+'a',callback)
 
                 var event = new Event(x);
+                Object.defineProperty(event, 'target', {value: {value:'hi'}, enumerable: true});
+
                 let inputElement=vm.$el.querySelector('input')
                 inputElement.dispatchEvent(event)
-                expect(callback).to.have.been.calledWith(event)
+                expect(callback).to.have.been.calledWith('hi')
             })
         })
-        it('支持change事件',()=>{
-            vm = new Constructor({}).$mount()
-
-            const callback=sinon.fake()
-            vm.$on('changea',callback)
-            // var a=vm.$children('input').$on('change',callback)
-            var event = new Event('change');
-            let inputElement=vm.$el.querySelector('input')
-            // inputElement.addEventListener('change', function (e) { console.log(e) }, false);
-            inputElement.dispatchEvent(event)
-            // vm.$emit('changea',callback)
-            expect(callback).to.have.been.calledWith(event)
-        })
-        it('支持blur事件',()=>{
-            vm = new Constructor({}).$mount()
-
-            const callback=sinon.fake()
-            vm.$on('blura',callback)
-            // var a=vm.$children('input').$on('change',callback)
-            var event = new Event('blur');
-            let inputElement=vm.$el.querySelector('input')
-            // inputElement.addEventListener('change', function (e) { console.log(e) }, false);
-            inputElement.dispatchEvent(event)
-            // vm.$emit('changea',callback)
-            expect(callback).to.have.been.calledWith(event)
-        })
-        it('支持focus事件',()=>{
-            vm = new Constructor({}).$mount()
-
-            const callback=sinon.fake()
-            vm.$on('focusa',callback)
-            // var a=vm.$children('input').$on('change',callback)
-            var event = new Event('focus');
-            let inputElement=vm.$el.querySelector('input')
-            // inputElement.addEventListener('change', function (e) { console.log(e) }, false);
-            inputElement.dispatchEvent(event)
-            // vm.$emit('changea',callback)
-            expect(callback).to.have.been.calledWith(event)
-        })
-        it('支持input事件',()=>{
-            vm = new Constructor({}).$mount()
-
-            const callback=sinon.fake()
-            vm.$on('inputa',callback)
-            // var a=vm.$children('input').$on('change',callback)
-            var event = new Event('input');
-            let inputElement=vm.$el.querySelector('input')
-            // inputElement.addEventListener('input', function (e) { console.log(e) }, false);
-            inputElement.dispatchEvent(event)
-            // vm.$emit('changea',callback)
-            expect(callback).to.have.been.calledWith(event)
-        })
+        // it('支持change事件',()=>{
+        //     vm = new Constructor({}).$mount()
+        //
+        //     const callback=sinon.fake()
+        //     vm.$on('changea',callback)
+        //     // var a=vm.$children('input').$on('change',callback)
+        //     var event = new Event('change');
+        //     let inputElement=vm.$el.querySelector('input')
+        //     // inputElement.addEventListener('change', function (e) { console.log(e) }, false);
+        //     inputElement.dispatchEvent(event)
+        //     // vm.$emit('changea',callback)
+        //     expect(callback).to.have.been.calledWith(event)
+        // })
+        // it('支持blur事件',()=>{
+        //     vm = new Constructor({}).$mount()
+        //
+        //     const callback=sinon.fake()
+        //     vm.$on('blura',callback)
+        //     // var a=vm.$children('input').$on('change',callback)
+        //     var event = new Event('blur');
+        //     let inputElement=vm.$el.querySelector('input')
+        //     // inputElement.addEventListener('change', function (e) { console.log(e) }, false);
+        //     inputElement.dispatchEvent(event)
+        //     // vm.$emit('changea',callback)
+        //     expect(callback).to.have.been.calledWith(event)
+        // })
+        // it('支持focus事件',()=>{
+        //     vm = new Constructor({}).$mount()
+        //
+        //     const callback=sinon.fake()
+        //     vm.$on('focusa',callback)
+        //     // var a=vm.$children('input').$on('change',callback)
+        //     var event = new Event('focus');
+        //     let inputElement=vm.$el.querySelector('input')
+        //     // inputElement.addEventListener('change', function (e) { console.log(e) }, false);
+        //     inputElement.dispatchEvent(event)
+        //     // vm.$emit('changea',callback)
+        //     expect(callback).to.have.been.calledWith(event)
+        // })
+        // it('支持input事件',()=>{
+        //     vm = new Constructor({}).$mount()
+        //
+        //     const callback=sinon.fake()
+        //     vm.$on('inputa',callback)
+        //     // var a=vm.$children('input').$on('change',callback)
+        //     var event = new Event('input');
+        //     let inputElement=vm.$el.querySelector('input')
+        //     // inputElement.addEventListener('input', function (e) { console.log(e) }, false);
+        //     inputElement.dispatchEvent(event)
+        //     // vm.$emit('changea',callback)
+        //     expect(callback).to.have.been.calledWith(event)
+        // })
     })
 })
 
