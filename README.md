@@ -77,7 +77,7 @@ new Vue({
     </div>
 </div>
 ```
-* 但是这样你需要把1——24的占用对应的CSS的width宽度都要计算并写出来。这时候**scss提供了一个简单的循环写法**,通过**[scss文档](https://www.sass.hk/docs/)找到`@for`**
+* 但是这样你需要把1——24的占用对应的CSS的width宽度都要计算并写出来。这时候**scss提供了一个简单的循环写法,通过[scss文档](https://www.sass.hk/docs/)找到`@for`.**
 * @for 指令可以在限制的范围内重复输出格式，每次按要求（变量的值）对输出结果做出变动。这个指令包含两种格式：@for $var from <start> through <end>，或者 @for $var from <start> to <end>，区别在于 through 与 to 的含义：当使用 through 时，条件范围包含 <start> 与 <end> 的值，而使用 to 时条件范围只包含 <start> 的值不包含 <end> 的值。另外，$var 可以是任何变量，比如 $i；<start> 和 <end> 必须是整数值。
 * 还需要用到[插值语句 #{}](https://www.sass.hk/docs/)和[变量 $](https://www.sass.hk/docs/)。例如
 ```
@@ -208,11 +208,218 @@ new Vue({
 * 然后col.vue组件上面[绑定这个class](https://cn.vuejs.org/v2/guide/class-and-style.html#ad)就好了，绑定class有两种方式，一种是数组形式，另一种是对象形式，我们这里就用数组形式
 ```
 <template>
-    <div class="col" :class="[`col-${span}`]">
+    <div class="col" :class="[span&&`col-${span}`]">
         <slot></slot>
     </div>
 </template>
 ```
+#### 增加offset，这里并不是gutter
+* 在col.vue上面使用offset，为了避免offset不存在也就是undefined的前提下我们加上offset&&
+```
+    <div class="col" :class="[span&&`col-${span}`,offset&&`offset-${offset}`]">
+```
+* col.vue组件上面的props增加offset，style上面增加offset的样式
+```
+    <script>
+        export default {
+            name:'GuluCol',
+            props: {
+                span: [Number, String],
+                //    span:{
+                // type:[Number,String]
+                // },
+                offset:[Number, String]
+            }
+        }
+    </script>
+    
+    <style lang="scss" scoped>
+            $class-prefix: offset-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+    </style>
+```
+* 这样只需要offset和span加起来是24份即可。
+#### 强制设置两个span之间有gutter
+* 如果在col.vue组件上面用margin会使得最左边和最右边有空隙，这是不合适的，**如果使用padding，就会使得文字部分左边和右边会有空隙**，不过可以通过外父组件row.vue增加margin来使得文字部分刚好没有空隙
+* col.vue上面
+```
+        padding:0 10px;
+```
+* row.vue上面
+```
+        margin:0 -10px;
+```
+* 这样**文字部分刚好与边框对齐**。
+* 左右像素是10px,而此时中间空隙是20px。这样我们就实现了中间空隙的控制。
+* 我们就需要在父组件上面的margin:0 -10px,通过参数修改。row.vue上面传入一个参数props，是gutter。
+```
+<script>
+    export default {
+        props:{
+            gutter:[Number,String]
+        }
+    }
+</script>
+```
+* 我们在组件里面使用这个参数gutter。注意这里的style后面是一个对象，对象的[key](https://wangdoc.com/javascript/basic/grammar.html#%E6%A0%87%E8%AF%86%E7%AC%A6)需要满足标识符的要求，也就是不可以使用中划线表示，可以使用驼峰表示。**所以这里的`marginLeft`不能写成`margin-left`**.
+```
+<template>
+    <div class="row" :style="{marginLeft:gutter/2+'px',marginRight:gutter/2+'px'}">
+        <slot></slot>
+    </div>
+</template>
+```
+* 接下来我们需要把父组件row.vue里面加上gutter的值对应的子组件col.vue里面的padding.
+***
+* 但是**父组件上面的这个参数gutter怎么传递给子组件呢**？
+***
+#### 父组件传参数给子组件
+1. 比较笨的方法，用户当然也是体验不好的方法就是在子组件上面加一样的gutter
+    * 最笨的方法是直接在子组件col上面直接写冒号gutter属性等于多少，然后再子组件col上面也声明一个props对应的gutter属性变量。写上paddingLeft和paddingRight.
+    ```
+    <template>
+        <div class="col" :class="[span&&`col-${span}`,offset&&`offset-${offset}`]"
+            :style="{paddingLeft:gutter/2+'px',paddingRight:gutter/2+'px'}">
+            <div style="border:1px solid green;height:100px;">
+            <slot></slot>
+            </div>
+        </div>
+    </template>
+    <script>
+        export default {
+            name:'GuluCol',
+            props: {
+                span: [Number, String],
+                //    span:{
+                // type:[Number,String]
+                // },
+                offset:[Number, String],
+                gutter:[Number,String]
+            }
+        }
+    </script>
+    ```
+    * 在index.html上面对col标签也谢上gutter的值
+    ```
+        <g-row :gutter="20">
+            <g-col :gutter="20">1</g-col>
+            <g-col :gutter="20">2</g-col>
+            <g-col :gutter="20">3</g-col>
+        </g-row>
+    ```
+2. 通过父组件row.vue的gutter传参数给子组件col.vue使用，这样只需要传一次就好了，也就是不需要在子组件上面再次传gutter参数。
+    * 这里可以通过vue的钩子来实现传参数，比如[created](https://cn.vuejs.org/v2/api/#created),我们通过在row.vue上面使用created,**发现是一个空数组，但是点击之后看到里面是有相应的子Vue组件结构。**
+    ```
+            created(){
+                console.log(this.$children)
+            }
+    ```
+    * 我们可以通过一个控制台例子发现问题
+    ```
+    var a=[]
+    console.log(a)
+    打出的是[],但是先不要点开这个[]
+    然后输入a.push(1)
+    最后再点开这个数组发现里面有一个1
+    ```
+    * 通过这个例子我们发现当打印的时候数组a里面并没有内容，是个空数组，打印完了之后，我们在push，此时再点开发现里面是由一个1的。这里主要是**时间的问题**。
+    * 但是我们用另外一个[mounted](https://cn.vuejs.org/v2/api/#mounted)钩子**发现是由内容的数组。**
+    ```
+            mounted(){
+                console.log(this.$children)
+            }
+    ```
+    * 那么mounted和created这两个钩子区别是什么？通过原生的JS代码来解释
+    ```
+    var div=document.createElement('div')//这个状态就是created，只是在内存里面生成，并没有放到页面里面
+    document.body.appendChild(div)//这个就叫做mounted，也就是把这个生成的对象挂到页面里面去
+    ```
+    * 所以对于组件来说，created的就是创建一个组件，但是并没有放到页面里面。而mounted是把它放到页面里面的那一瞬间。
+    * 那如果父组件上面还有子组件，那么创建并放入到页面中的顺序应该是怎么样？
+        ```
+        var div=document.createElement('div')//father created
+        var childDiv=document.createElement('div')//child created
+        //其中father和child的created 的顺序其实无所谓。其实也不重要，那么vue选择了哪个顺序呢？
+        div.appendChild(childDiv)//child mounted
+        document.body.appendChild(div)//father mounted
+        ```
+    * vue选择了先创建父组件还是子组件呢？并且使谁先挂载到页面里面呢。我们通过在父组件row.vue和子组件col.vue里面都使用created和mounted就可以测试了
+    * 在父组件row.vue里面
+        ```
+            created(){
+                console.log('row created')
+            },
+            mounted(){
+                console.log('row mounted')
+            }
+        ```
+    * 在子组件col.vue里面
+        ```
+            created(){
+                console.log('col created')
+            },
+            mounted(){
+                console.log('col mounted')
+            }
+        ```
+    * 我们在控制台上面打印出来可以看到顺序是
+        1. 首先是父组件row created
+        2. 然后是三个子组件 col created
+        3. 接着三个子组件 col mounted
+        4. 最后是父组件 row mounted
+        ```
+        row created//首先是父组件row created
+        3col.vue:21 col created//然后是三个子组件 col created
+        3col.vue:24 col mounted//接着三个子组件 col mounted
+        row.vue:17 row mounted//最后是父组件 row mounted
+        ```
+    * 我们知道了这个创建和挂在到页面的顺序有什么用，**我们看到最后一个是父组件row mounted，那么我们只需要通过父组件的mounted钩子就可以知道所有子子孙孙的组件都已经挂在到了页面中了。就可以获取到它们。**我们在父组件上面通过forEach循环把获取的gutter传递给子组件的gutter
+        ```
+                mounted(){
+                    this.$children.forEach((x)=>{
+                        x.gutter=this.gutter
+                    })
+        ```
+    
+    * 但是此时需要用到vue的[data](https://cn.vuejs.org/v2/guide/components.html#data-%E5%BF%85%E9%A1%BB%E6%98%AF%E4%B8%80%E4%B8%AA%E5%87%BD%E6%95%B0)属性.在col.vue里面默认给的是0.**这里如果用props而不用data会报错**
+        ```
+                data(){
+                    return {
+                        gutter:0
+                    }
+                }
+        ```
+        * 在col.vue的template里面加上它的style
+        ```
+                :style="{paddingLeft:gutter/2+'px',paddingRight:gutter/2+'px'}">
+        ```
+    * 这样我们在index.html的**子组件col上就不需要写gutter属性了**
+    ```
+        <g-row :gutter="20">
+            <g-col >1</g-col>
+            <g-col >2</g-col>
+            <g-col >3</g-col>
+        </g-row>
+    ```
+* 最后老师的**视频显示有个1像素的偏移边框问题没有对齐**，可能是四舍五入的问题导致的。
+#### 小结
+***
+1. 首先在父组件row.vue上面接受一个props——gutter.这个gutter的值由index.html外面的标签传入进来
+2. 然后在子组件col.vue上面使用**data定义**的gutter属性。这个gutter最后是通过父组件传进来。
+3. 在父组件上面用钩子mounted里面forEach循环给this.$children传入这个gutter.
+    ```
+        mounted(){
+            this.$children.forEach((x)=>{
+                x.gutter=this.gutter
+            })
+    ```
+4. 最后在父组件上面写上margin，子组件上面写上padding就完成了。
+***
 
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
