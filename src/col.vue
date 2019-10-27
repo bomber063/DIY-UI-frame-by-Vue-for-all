@@ -14,14 +14,14 @@
             // },
             offset:[Number, String],
         },
-        created(){
-            console.log('col created')
-        },
-        mounted(){
-            console.log('col mounted')
-        },
+        // created(){
+        //     console.log('col created')
+        // },
+        // mounted(){
+        //     console.log('col mounted')
+        // },
         data(){
-            console.log(`在子组件col里面，因为gutter在data里面变成了${this.gutter}，所以我也要变化`)
+            // console.log(`在子组件col里面，因为gutter在data里面变成了${this.gutter}，所以我也要变化`)
             return {
                 gutter:0
             }
@@ -35,7 +35,7 @@
                 ]
             },
             colStyle(){
-                console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                // console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
                 return {
                     paddingLeft:this.gutter/2+'px',
                     paddingRight:this.gutter/2+'px'
@@ -47,7 +47,7 @@
 
 <style lang="scss" scoped>
     .col {
-        width: 50%;
+        /*width: 50%;*/
 
         /*下面的就是*/
         /*.col.col-1*/

@@ -540,6 +540,115 @@ col.vue:33 因为gutter在computed里面变成了0，所以我也要变化
             }
         }
 ```
+### 根据淘宝网站手动测试
+* 我们手动测试增加在index.html上的代码
+```
+    <g-row class="topBar">
+        <g-col class="demoBox" span="9">
+            <g-row align="left">
+                <g-col style="width:50px;">1</g-col>
+                <g-col>2</g-col>
+                <g-col>3</g-col>
+                <g-col>4</g-col>
+            </g-row>
+        </g-col>
+        <g-col class="demoBox" span="15">
+            <g-row align="left">
+                <g-col>1</g-col>
+                <g-col>2</g-col>
+                <g-col>3</g-col>
+                <g-col>4</g-col>
+                <g-col>5</g-col>
+                <g-col>6</g-col>
+                <g-col>7</g-col>
+            </g-row>
+        </g-col>
+    </g-row>
+    <g-row class="logo-and-search-and-qrcode">
+        <g-col class="demoBox" span="4"></g-col>
+        <g-col class="demoBox" span="14"></g-col>
+        <g-col class="demoBox" span="6"></g-col>
+    </g-row>
+```
+* 这里需要给父组件row.vue增加一个靠左或者靠右的的CSS属性
+```
+    <div class="row" :style="rowStyle" :class="rowClass">
+```
+* props中,这里用到验证[validator: Function](https://cn.vuejs.org/v2/api/#props)，自定义验证函数会将该 prop 的值作为唯一的参数代入。在非生产环境下，如果该函数返回一个 falsy 的值 (也就是验证失败)，一个控制台警告将会被抛出,还用到[includes](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)或者[indexOf](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf)
+* indexOf()方法返回在数组中可以找到一个给定元素的第一个索引，如果不存在，则返回-1。
+* includes() 方法用来判断一个数组是否包含一个指定的值，根据情况，如果包含则返回 true，否则返回false。
+```
+            align:{
+                type:String,
+                validator(value){
+                    return['left','right','center'].includes(value)//下面的也是一样的效果。
+                    // return['left','right','center'].indexOf(value)!==-1
+                }
+```
+* CSS的class加上[justify-content属性](https://developer.mozilla.org/zh-CN/docs/Web/CSS/justify-content)
+```
+<style lang="scss" scoped>
+    .row{
+        display: flex;
+        &.align-right{
+            justify-content: flex-end;
+        }
+        &.align-left{
+            justify-content: flex-start;
+        }
+        &.align-center{
+            justify-content: center;
+        }
+    }
+</style>
+```
+* 因为我们之前在子组件col.vue里面写了默认宽度50%，所以这里的justify-content属性是不生效的，需要注释或者删除掉这个默认宽度50%。
+```
+    .col {
+        /*width: 50%;*/
+}
+```
+* 然后我们从淘宝网站截图背景图片过来
+```
+    <g-row class="logo-and-search-and-qrcode">
+        <g-col class="demoBox" span="4"><img src="http://img.alicdn.com/tps/TB1YZkPLpXXXXbzXXXXXXXXXXXX-213-57.png" alt=""></g-col>
+        <g-col class="demoBox" span="14"></g-col>
+        <g-col class="demoBox" span="6"></g-col>
+    </g-row>
+```
+* 通过img的最大宽度和padding解决居中和布局问题。这里用`align="center"`，如果不想这么麻烦，也可以自己在log-wrapper这个class上写样式，而不用g-row和g-col
+```
+    <g-row class="logo-and-search-and-qrcode">
+        <g-col class="demoBox" span="6">
+            <g-row align="center">
+                <g-col>
+                    <div class="logo-wrapper">
+<!--                        这里把logo-wrapper不放到go-col上面，而放到div上面，因为有可能go-col会有重复的class，因为g-col是有它自己的样式的-->
+                        <img class="logo" src="http://img.alicdn.com/tps/TB1YZkPLpXXXXbzXXXXXXXXXXXX-213-57.png" alt="">
+                    </div>
+                </g-col>
+            </g-row>
+        </g-col>
+        <g-col class="demoBox" span="12"></g-col>
+        <g-col class="demoBox" span="6"></g-col>
+    </g-row>
+```
+* 在index.html写上它的样式，这里用最大宽度。
+```
+<style>
+    .demoBox{
+        border:1px solid red;
+        min-height:50px;
+        background: grey;
+    }
+    img{
+        max-width: 100%;
+    }
+    .logo-wrapper{
+        padding:10px;
+    }
+</style>
+```
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)

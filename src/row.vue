@@ -1,5 +1,5 @@
 <template>
-    <div class="row" :style="rowStyle">
+    <div class="row" :style="rowStyle" :class="rowClass">
         <slot></slot>
     </div>
 </template>
@@ -8,12 +8,23 @@
     export default {
         name:'GuluRow',
         props:{
-            gutter:[Number,String]
+            gutter:[Number,String],
+            align:{
+                type:String,
+                validator(value){
+                    return['left','right','center'].includes(value)//下面的也是一样的效果。
+                    // return['left','right','center'].indexOf(value)!==-1
+                }
+            }
         },
-        created(){
-            console.log('row created')
-        },
+        // created(){
+        //     console.log('row created')
+        // },
         computed:{
+            rowClass(){
+                let {align}=this
+                return [ align &&`align-${align}` ]
+            },
             rowStyle(){
                 let {gutter}=this
                 return{
@@ -25,7 +36,7 @@
         mounted(){
             this.$children.forEach((x)=>{
                 x.gutter=this.gutter
-                console.log('row mounted，此时循环把gutter传递给子组件col'+x.gutter)
+                // console.log('row mounted，此时循环把gutter传递给子组件col'+x.gutter)
             })
         }
     }
@@ -33,5 +44,14 @@
 <style lang="scss" scoped>
     .row{
         display: flex;
+        &.align-right{
+            justify-content: flex-end;
+        }
+        &.align-left{
+            justify-content: flex-start;
+        }
+        &.align-center{
+            justify-content: center;
+        }
     }
 </style>
