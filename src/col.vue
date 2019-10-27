@@ -1,9 +1,7 @@
 <template>
-    <div class="col" :class="[span&&`col-${span}`,offset&&`offset-${offset}`]"
-        :style="{paddingLeft:gutter/2+'px',paddingRight:gutter/2+'px'}">
-        <div style="border:1px solid green;height:100px;">
+    <div class="col" :class="colClass"
+        :style="colStyle">
         <slot></slot>
-        </div>
     </div>
 </template>
 <script>
@@ -16,15 +14,32 @@
             // },
             offset:[Number, String],
         },
-        // created(){
-        //     console.log('col created')
-        // },
-        // mounted(){
-        //     console.log('col mounted')
-        // }
+        created(){
+            console.log('col created')
+        },
+        mounted(){
+            console.log('col mounted')
+        },
         data(){
+            console.log(`在子组件col里面，因为gutter在data里面变成了${this.gutter}，所以我也要变化`)
             return {
                 gutter:0
+            }
+        },
+        computed:{
+            colClass(){
+                let {span,offset}=this
+                return[
+                    span&&`col-${span}`,
+                    offset&&`offset-${offset}`
+                ]
+            },
+            colStyle(){
+                console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                return {
+                    paddingLeft:this.gutter/2+'px',
+                    paddingRight:this.gutter/2+'px'
+                }
             }
         }
     }

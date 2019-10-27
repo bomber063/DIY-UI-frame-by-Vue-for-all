@@ -420,7 +420,126 @@ new Vue({
     ```
 4. 最后在父组件上面写上margin，子组件上面写上padding就完成了。
 ***
+### 重构与重写
+* 重构就是通过**微小的调整**使代码变的更好。重构基本上每天都会去做
+* 重写就是**巨大的调整代码**。隔了一段时间再去写的很多都是重新，因为很多东西都忘记了或者积累的问题太多了。
+* 什么情况下需要重构与重写。
+    1. 重复两次及以上的代码，重复的代码可能出现你改了第一个地方，忘记改第二个地方就会产生bug。可以通过一个函数把代码包围起来，下次使用只要调用这个函数即可，这只是其中一种方法。
+    2. 一眼看，看不懂的代码。比如我们写在col.vue的style上面的代码，如果这个style有更多的CSS属性久会特别的长。**我们可以加一个中间变量(这里就用colStyle这个变量)即可，它其实就是一个对象，可以把这个对象放到computed里面去,这里不可以放到data里面，因为放到data里面只会在一开始的读取，再次变化就不会去读取了**。
+        ```
+    <div class="col" :class="[span&&`col-${span}`,offset&&`offset-${offset}`]"
+        :style="{paddingLeft:gutter/2+'px',paddingRight:gutter/2+'px'}">
 
+        ```
+* 如果一个属性是根据另外一个属性变化的就用[computed](https://cn.vuejs.org/v2/api/#computed)，我们可以通过打印出父组件row.vue的代码
+```
+<script>
+    export default {
+        name:'GuluRow',
+        props:{
+            gutter:[Number,String]
+        },
+        created(){
+            console.log('row created')
+        },
+        mounted(){
+            this.$children.forEach((x)=>{
+                x.gutter=this.gutter
+                console.log('row mounted，此时循环把gutter传递给子组件col'+x.gutter)
+            })
+        }
+    }
+</script>
+```
+* 同时也打印出子组件col.vue的对应的代码
+```
+<script>
+    export default {
+        name:'GuluCol',
+        props: {
+            span: [Number, String],
+            //    span:{
+            // type:[Number,String]
+            // },
+            offset:[Number, String],
+        },
+        created(){
+            console.log('col created')
+        },
+        mounted(){
+            console.log('col mounted')
+        },
+        data(){
+            console.log(`因为gutter在data里面变成了${this.gutter}，所以我也要变化`)
+            return {
+                gutter:0
+            }
+        },
+        computed:{
+            colStyle(){
+                console.log(`因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                return {
+                    paddingLeft:this.gutter/2+'px',
+                    paddingRight:this.gutter/2+'px'
+                }
+            }
+        }
+    }
+</script>
+```
+* 发现变化的情况是(省略了一些重复的)
+```
+row created
+col.vue:26 因为gutter在data里面变成了undefined，所以我也要变化
+col.vue:20 col created
+col.vue:33 因为gutter在computed里面变成了0，所以我也要变化
+3col.vue:23 col mounted
+3row.vue:19 row mounted，此时循环把gutter传递给子组件col20
+19col.vue:33 在子组件col里面，因为gutter在computed里面变成了20，所以我也要变化
+```
+* 可以看到步骤如下：
+    1. data里面是在子组件row.vue的created之后会有一个undefined（因为此时还没有产生col）.
+    2. col.vue在**created之后会有一个0**(因为在产生col.vue之后，里面data里面的gutter默认就是0).
+    3. 接着就是col mounted。
+    4. 接着row mounted，此时再父组件row里面通过循环把gutter传递给子组件col为20
+    5. 所以最后在子组件col里面，因为gutter在**computed里面变成了20，所以我也要变化**
+* 所以**data**的数据只有在created创建的时候就诞生，并且**不会变化**。而**computed**是在mounted之后**如果有变化会更新**。
+* 另外一个class我们用colClass这个变量来代替
+```
+<template>
+    <div class="col" :class="colClass"
+        :style="colStyle">
+        <slot></slot>
+    </div>
+```
+* 我们同样用computed来return这个函数,在css里面的可以不用加this，因为Vue会帮你默认增加，**但是在script里面的是需要增加this的，不然会报错**。
+```
+        computed:{
+            colClass(){
+                let {span,offset}=this
+                return[
+                    span&&`col-${span}`,
+                    offset&&`offset-${offset}`
+                ]
+            }
+        }
+```
+* row.vue里面代码也一样重构一下,首先CSS标签你的style对应用一个rowStyle变量代替
+```
+    <div class="row" :style="rowStyle">
+```
+* 然后用一个computed来返回这个rowStyle对应的函数
+```
+        computed:{
+            rowStyle(){
+                let {gutter}=this
+                return{
+                    marginLeft:-gutter/2+'px',
+                    marginRight:-gutter/2+'px'
+                }
+            }
+        }
+```
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)
