@@ -37,122 +37,86 @@
     <title>轱辘</title>
 </head>
 <body>
-<style>
-    .demoBox{
-        border:1px solid red;
-        min-height:50px;
-        background: grey;
-    }
-    img{
-        max-width: 100%;
-    }
-    .logo-wrapper{
-        padding:10px;
-    }
-</style>
 <div id="app">
-    <g-row class="topBar">
-        <g-col class="demoBox" span="9">
-            <g-row align="left">
-                <g-col>1</g-col>
-                <g-col>2</g-col>
-                <g-col>3</g-col>
-                <g-col>4</g-col>
-            </g-row>
-        </g-col>
-        <g-col class="demoBox" span="15">
-            <g-row align="right">
-                <g-col>1</g-col>
-                <g-col>2</g-col>
-                <g-col>3</g-col>
-                <g-col>4</g-col>
-                <g-col>5</g-col>
-                <g-col>6</g-col>
-                <g-col>7</g-col>
-            </g-row>
-        </g-col>
+    <div style="border:1px solid blue">
+    <g-row :gutter="20">
+        <g-col >1</g-col>
+        <g-col >2</g-col>
+        <g-col >3</g-col>
     </g-row>
-    <g-row class="logo-and-search-and-qrcode">
-        <g-col class="demoBox" span="6">
-            <g-row align="center">
-                <g-col>
-                    <div class="logo-wrapper">
-<!--                        这里把logo-wrapper不放到go-col上面，而放到div上面，因为有可能go-col会有重复的class，因为g-col是有它自己的样式的-->
-                        <img class="logo" src="http://img.alicdn.com/tps/TB1YZkPLpXXXXbzXXXXXXXXXXXX-213-57.png" alt="">
-                    </div>
-                </g-col>
-            </g-row>
-        </g-col>
-        <g-col class="demoBox" span="12"></g-col>
-        <g-col class="demoBox" span="6"></g-col>
+    <g-row :gutter="20">
+        <g-col >1</g-col>
+        <g-col >2</g-col>
+        <g-col >3</g-col>
+        <g-col >4</g-col>
     </g-row>
-<!--    <div style="border:1px solid blue">-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col >1</g-col>-->
-<!--        <g-col >2</g-col>-->
-<!--        <g-col >3</g-col>-->
-<!--    </g-row>-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col >1</g-col>-->
-<!--        <g-col >2</g-col>-->
-<!--        <g-col >3</g-col>-->
-<!--        <g-col >4</g-col>-->
-<!--    </g-row>-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col span="2">1</g-col>-->
-<!--        <g-col span="20" :offset="2">2</g-col>-->
-<!--    </g-row>-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col span="4">1</g-col>-->
-<!--        <g-col :span="'20'" >2</g-col>-->
-<!--    </g-row>-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col span="4">1</g-col>-->
-<!--        <g-col :span="18" offset="2">2</g-col>-->
-<!--    </g-row>-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col span="4">1</g-col>-->
-<!--        <g-col :span="8" offset="2">2</g-col>-->
-<!--        <g-col :span="8" offset="2">2</g-col>-->
-<!--    </g-row>-->
-<!--    <g-row :gutter="20">-->
-<!--        <g-col span="4">1</g-col>-->
-<!--        <g-col :span="4" offset="6">2</g-col>-->
-<!--        <g-col :span="8" offset="2">2</g-col>-->
-<!--    </g-row>-->
-<!--    </div>-->
+    <g-row :gutter="20">
+        <g-col span="2"
+               :phone="{span:12}"
+               :ipad="{span:8}"
+               :narrow-pc="{span:4}"
+               :pc="{span:2}"
+               :wide-pc="{span:1}"
+        >1</g-col>
+        <g-col span="20" :offset="2"
+               :phone="{span:12,offset:0}"
+               :ipad="{span:16}"
+               :narrow-pc="{span:20}"
+               :pc="{span:22}"
+               :wide-pc="{span:23}"
+        >2</g-col>
+    </g-row>
+    <g-row :gutter="20">
+        <g-col span="4" >1</g-col>
+        <g-col :span="'20'" >2</g-col>
+    </g-row>
+    <g-row :gutter="20">
+        <g-col span="4">1</g-col>
+        <g-col :span="18" offset="2">2</g-col>
+    </g-row>
+    <g-row :gutter="20">
+        <g-col span="4">1</g-col>
+        <g-col :span="8" offset="2">2</g-col>
+        <g-col :span="8" offset="2">2</g-col>
+    </g-row>
+    <g-row :gutter="20">
+        <g-col span="4">1</g-col>
+        <g-col :span="4" offset="6">2</g-col>
+        <g-col :span="8" offset="2">2</g-col>
+    </g-row>
+    </div>
 
-<!--    <div class="box">-->
-<!--    <g-input valuea="张三" disableda></g-input>-->
-<!--    <g-input valuea="李四" readonlya></g-input>-->
-<!--    <g-input valuea="王五" ></g-input>-->
-<!--    </div>-->
-<!--    <div class="box">-->
-<!--    <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>-->
-<!--    <g-input valuea="王五" @changea="inputChange"></g-input>-->
-<!--&lt;!&ndash;    <g-input v-model="message"></g-input>&ndash;&gt;-->
-<!--    <g-input :valuea="message" @inputa="message=$event"></g-input>-->
-<!--        <button @click="message=message+1">+1</button>-->
-<!--        <span>{{message}}</span>-->
-<!--    </div>-->
+    <div class="box">
+    <g-input valuea="张三" disableda></g-input>
+    <g-input valuea="李四" readonlya></g-input>
+    <g-input valuea="王五" ></g-input>
+    </div>
+    <div class="box">
+    <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>
+    <g-input valuea="王五" @changea="inputChange"></g-input>
+<!--    <g-input v-model="message"></g-input>-->
+    <g-input :valuea="message" @inputa="message=$event"></g-input>
+        <button @click="message=message+1">+1</button>
+        <span>{{message}}</span>
+    </div>
 
-<!--    <div class="box">-->
-<!--        <g-button :loadings="loading1" v-on:click="loading1=!loading1">-->
-<!--            按钮-->
-<!--        </g-button>-->
-<!--        <g-button icon="setting" icon-position="right" :loadings="loading2" @click="loading2=!loading2">-->
-<!--            按钮-->
-<!--        </g-button>-->
-<!--        <g-button icon="setting" :loadings="loading3" icon-position="left" @click="loading3=!loading3">-->
-<!--            按钮-->
-<!--        </g-button>-->
-<!--        <g-button-group>-->
-<!--            <g-button icon="left">上一页</g-button>-->
-<!--            <g-button>更多</g-button>-->
-<!--            <g-button icon="right" icon-position="right">下一页</g-button>-->
-<!--        </g-button-group>-->
-<!--        <div id="test"></div>-->
-<!--    </div>-->
+    <div class="box">
+        <g-button :loadings="loading1" v-on:click="loading1=!loading1">
+            按钮
+        </g-button>
+        <g-button icon="setting" icon-position="right" :loadings="loading2" @click="loading2=!loading2">
+            按钮
+        </g-button>
+        <g-button icon="setting" :loadings="loading3" icon-position="left" @click="loading3=!loading3">
+            按钮
+        </g-button>
+        <g-button-group>
+            <g-button icon="left">上一页</g-button>
+            <g-button>更多</g-button>
+            <g-button icon="right" icon-position="right">下一页</g-button>
+        </g-button-group>
+        <div id="test"></div>
+    </div>
 </div>
 <script src="./src/app.js"></script>
 <!--<script src="//at.alicdn.com/t/font_1440191_uxj4g5ikgln.js"></script>-->

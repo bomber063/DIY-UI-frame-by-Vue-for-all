@@ -649,6 +649,291 @@ col.vue:33 因为gutter在computed里面变成了0，所以我也要变化
     }
 </style>
 ```
+### 灵活与限制
+* 灵活是设计师想要的需求，而限制是工程师想要的需求，我们这个grid模式就是限制的模式。
+* 工程师对于布局通过**几个固定的数字**就可以完成肯定是非常乐意的，因为很快就可以完成了。而设计师就想怎么设计就怎么设计，**数字千奇百怪**。
+* 设计师奇怪的布局会使的工程师很难去实现，这样工程师的工作量会多很多，所以这就是设计师和工程师之间的权衡。
+* 如果是做后台管理用grid肯定没问题，因为后台管理是给内部人员用的，好不好看无所谓。
+* 如果你是做一个新的产品，比如漂亮的活动页。这就不需要用grid了，因为页面不好看，可能吸引不到客户。
+### 实现响应式
+* 响应式简单的说就是通过不同的设备宽度而现实不同的样式。也可以说当页面宽度变化的时候，页面的比例也跟着响应的变化。
+* 很简单的布局就是如果在**pc上面**可能是**左右结构**，但是在**Phone手机**上面就变成了**上下结构**。
+* 如果要添加行为，用CSS是做不到的。那就要单独写JS代码。
+* 我们通过[ant.design的响应式](https://ant.design/components/grid-cn/#components-grid-demo-responsive)看到它参考的 Bootstrap 的 响应式设计。
+#### UI库的历史
+* 最开始的UI库是[yui](https://yuilibrary.com/)，它是基于yui的。它跟JQ是齐平的一个库，但是现在很少有人用了。
+* 第一次UI组件库被打响是因为[Bootstrap](https://www.bootcss.com/)这个UI，它的中文名字翻译过来是启动的意思。它就做到了一个响应式。后面出来的基本上都是抄袭Bootstrap的理念的。包括ant.design，element，[material](https://www.material.io)的响应式.但是现在Bootstrap用的不多了，因为它是基于JQuery的。
+### 开始写代码
+* 为了减少代码，我们用一个phone变量来储存一个对象，对象里面包括了手机上对应的span和offset,比如
+```
+<g-col span=4 offset=1 :phone="{span:12,offset:2}">
+```
+* 增加一个phone的验证器,用到[Object.keys](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Object/keys)和[includes](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)
+* includes() 方法用来判断一个数组是否包含一个指定的值，根据情况，如果包含则返回 true，否则返回false。
+* Object.keys() 方法会返回一个由一个给定对象的自身可枚举属性组成的数组，数组中属性名的排列顺序和使用 for...in 循环遍历该对象时返回的顺序一致 。如果对象的键-值都不可枚举，那么将返回由键组成的数组。
+```
+        props: {
+            span: [Number, String],
+            //    span:{
+            // type:[Number,String]
+            // },
+            offset:[Number, String],
+            phone:{
+                type:Object,
+                validator(value){
+                    console.log(value)
+                    let keys=Object.keys(value)//把对象value的key组成数组返回，并赋值给keys
+                    console.log(keys)
+                    let valid=true
+                    console.log("循环外面"+['span','offset'].includes(keys[0]))
+                    keys.forEach((value)=>{
+                        if(!['span','offset'].includes(value)){//如果value是在数组['span','offset']里面的值就返回true
+                            valid=false
+                            console.log('循环里面'+valid)
+
+                        }
+                    })
+                    return valid
+                }
+            },
+        },
+```
+* 我们需要把phone的class加到computed的colClass里面去
+```
+        computed:{
+            colClass(){
+                let {span,offset,phone}=this//这里增加phone
+                let phoneClass=[]
+                if(phone){//如果有phone就把phone里面的span和offset放到phoneClass里面去
+                    phoneClass=[`col-phone-${phone.span}`,`col-phone-${phone.offset}`]
+                }
+                return[
+                    span&&`col-${span}`,
+                    offset&&`offset-${offset}`,
+                    ...phoneClass//这里不用前面三点也可以，可能是也支持数组的形式吧。三点是把一个数组以拆开个体的形式放入到另外一个数组里面
+                ]
+            },
+            colStyle(){
+                // console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                return {
+                    paddingLeft:this.gutter/2+'px',
+                    paddingRight:this.gutter/2+'px'
+                }
+            }
+        }
+```
+* 老师后面把代码省略为下面的，但是这个代码是有问题的，如果phone是undefined，那么就不会执行了，就会报错。
+```
+        computed:{
+            colClass(){
+                let {span,offset,phone}=this//这里增加phone
+                
+                return[
+                    span&&`col-${span}`,
+                    offset&&`offset-${offset}`,
+                    ... (phone && [`col-phone-${phone.span}`,`offset-phone-${phone.offset}`])//这里简写成这样，不要前面三点就不报错，有前面三点就报错，代表如果有phone,就返回&&后面的值
+                ]//如果有phone就把phone里面的span和offset放到phoneClass里面去
+            },
+            colStyle(){
+                // console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                return {
+                    paddingLeft:this.gutter/2+'px',
+                    paddingRight:this.gutter/2+'px'
+                }
+            }
+        }
+```
+* 因为三点运算符是针对数组的，那么通过三元运算我们把不存在的时候加上一个空数组就可以不报错了
+```
+        computed:{
+            colClass(){
+                let {span,offset,phone}=this//这里增加phone
+
+                return[
+                    span&&`col-${span}`,
+                    offset&&`offset-${offset}`,
+                    ... ( phone  ? [`col-phone-${phone.span}`,`offset-phone-${phone.offset}`]:[])//因为三点与运算符是针对数组的，那么后面就需要加上一个空数组。
+                ]//如果有phone就把phone里面的span和offset放到phoneClass里面去
+            },
+            colStyle(){
+                // console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                return {
+                    paddingLeft:this.gutter/2+'px',
+                    paddingRight:this.gutter/2+'px'
+                }
+            }
+        }
+```
+* 各个设备的宽度的大小划分可以参考[element](https://ant.design/components/grid-cn/#components-grid-demo-responsive-more)
+```
+xs	<576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-	
+sm	≥576px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-	
+md	≥768px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-	
+lg	≥992px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-	
+xl	≥1200px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object	-	
+xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对象	number|object
+```
+* 所以我们加上小于576px的CSS样式
+```
+        /*这个media查询是写在最下面，那么同样生效的同样的属性，上面的会被下面的覆盖掉，下面的样式优先级更高*/
+        @media (max-width: 576px){
+            $class-prefix: col-phone-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-phone-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+```
+* 在把各个宽度的CSS样式都加上
+```
+        @media (min-width: 577px) and (max-width: 768px){
+            $class-prefix: col-ipad-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-ipad-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+        @media (min-width: 769px) and (max-width: 992px){
+            $class-prefix: col-narrow-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-narrow-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+        @media (min-width: 993px) and (max-width: 1200px){
+            $class-prefix: col-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+        @media (min-width: 1201px){
+            $class-prefix: col-width-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-wide-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+```
+* 然后加上各个属性的自定义声明参数，因为有重复的代码，所以用一个函数 validator来代替，另外因为函数名字和自义定变量是相同名字，所以可以省略掉一些语法。
+```
+    let validator = (value) => {
+        let keys = Object.keys(value)//把对象value的key组成数组返回，并赋值给keys
+        let valid = true
+        keys.forEach((value) => {
+            if (!['span', 'offset'].includes(value)) {//如果value是在数组['span','offset']里面的值就返回true
+                valid = false
+
+            }
+        });
+        return valid
+    };
+    export default {
+        name:'GuluCol',
+        props: {
+            span: [Number, String],
+            //    span:{
+            // type:[Number,String]
+            // },
+            offset:[Number, String],
+            phone:{
+                type:Object,
+                validator//这里的意思就是validator:validator，如果key和value一样就可以简写为validator
+            },
+            ipad:{
+                type:Object,
+                validator
+            },
+            narrowPc:{
+                type:Object,
+                validator
+            },
+            pc:{
+                type:Object,
+                validator
+            },
+            widePc:{
+                type:Object,
+                validator
+            },
+        },
+    }
+```
+* computed里面的代码
+```
+        computed:{
+            colClass(){
+                let {span,offset,phone,ipad,narrowPc,pc,widePc}=this//这里增加phone
+
+                return[
+                    span&&`col-${span}`,
+                    offset&&`offset-${offset}`,
+                    ... ( phone  ? [`col-phone-${phone.span}`,`offset-phone-${phone.offset}`]:[]),//因为三点与运算符是针对数组的，那么后面就需要加上一个空数组。
+                    ... ( ipad ? [`col-ipad-${ipad.span}`,`offset-ipad-${ipad.offset}`]:[]),
+                    ... ( narrowPc ? [`col-narrowPc-${narrowPc.span}`,`offset-narrowPc-${narrowPc.offset}`]:[]),
+                    ... ( pc ? [`col-pc-${pc.span}`,`offset-pc-${pc.offset}`]:[]),
+                    ... ( widePc ? [`col-widePc-${widePc.span}`,`offset-widePc-${widePc.offset}`]:[])
+                ]//如果有phone就把phone里面的span和offset放到phoneClass里面去
+            },
+```
+* 在index.html上面就可以给各种样式传参了
+```
+    <g-row :gutter="20">
+        <g-col span="2"
+               :phone="{span:12}"
+               :ipad="{span:8}"
+               :narrow-pc="{span:4}"
+               :pc="{span:2}"
+               :wide-pc="{span:1}"
+        >1</g-col>
+        <g-col span="20" :offset="2"
+               :phone="{span:12,offset:0}"
+               :ipad="{span:16}"
+               :narrow-pc="{span:20}"
+               :pc="{span:22}"
+               :wide-pc="{span:23}"
+        >2</g-col>
+    </g-row>
+```
+* 如果需要上下结构，可以都设置为span：12,但是需要把row.vue里面增加`flex-wrap:wrap`,**因为默认是不换行的(nowrap)**.
+### 解决bug
+* 目前如果五种都写了，那么默认的span就没有意义了，所以要选择一种作为默认的span。
+* 如果这个UI定位是手机的UI框架，那么就把手机作为默认的样式，可以把phone删除了，把它作为默认的即可。
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)
