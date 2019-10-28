@@ -37,84 +37,112 @@
     <title>轱辘</title>
 </head>
 <body>
+<style>
+    .demo{
+        background: grey;
+        height:100px;
+        border:1px solid #333;
+    }
+</style>
 <div id="app">
-    <div style="border:1px solid blue">
-    <g-row :gutter="20">
-        <g-col >1</g-col>
-        <g-col >2</g-col>
-        <g-col >3</g-col>
+    <g-row>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
     </g-row>
-    <g-row :gutter="20">
-        <g-col >1</g-col>
-        <g-col >2</g-col>
-        <g-col >3</g-col>
-        <g-col >4</g-col>
-    </g-row>
-    <g-row :gutter="20">
-        <g-col span="24"
-               :ipad="{span:8}"
-               :narrow-pc="{span:4}"
-               :pc="{span:2}"
-               :wide-pc="{span:1}"
-        >1</g-col>
-        <g-col span="24"
-               :ipad="{span:16}"
-               :narrow-pc="{span:20}"
-               :pc="{span:22}"
-               :wide-pc="{span:23}"
-        >2</g-col>
-    </g-row>
-    <g-row :gutter="20">
-        <g-col span="4" >1</g-col>
-        <g-col :span="'20'" >2</g-col>
-    </g-row>
-    <g-row :gutter="20">
-        <g-col span="4">1</g-col>
-        <g-col :span="18" offset="2">2</g-col>
-    </g-row>
-    <g-row :gutter="20">
-        <g-col span="4">1</g-col>
-        <g-col :span="8" offset="2">2</g-col>
-        <g-col :span="8" offset="2">2</g-col>
-    </g-row>
-    <g-row :gutter="20">
-        <g-col span="4">1</g-col>
-        <g-col :span="4" offset="6">2</g-col>
-        <g-col :span="8" offset="2">2</g-col>
-    </g-row>
-    </div>
 
-    <div class="box">
-    <g-input valuea="张三" disableda></g-input>
-    <g-input valuea="李四" readonlya></g-input>
-    <g-input valuea="王五" ></g-input>
-    </div>
-    <div class="box">
-    <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>
-    <g-input valuea="王五" @changea="inputChange"></g-input>
-<!--    <g-input v-model="message"></g-input>-->
-    <g-input :valuea="message" @inputa="message=$event"></g-input>
-        <button @click="message=message+1">+1</button>
-        <span>{{message}}</span>
-    </div>
+<!--    <div style="border:1px solid blue">-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col >1</g-col>-->
+<!--        <g-col >2</g-col>-->
+<!--        <g-col >3</g-col>-->
+<!--    </g-row>-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col >1</g-col>-->
+<!--        <g-col >2</g-col>-->
+<!--        <g-col >3</g-col>-->
+<!--        <g-col >4</g-col>-->
+<!--    </g-row>-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col span="24"-->
+<!--               :ipad="{span:8}"-->
+<!--               :narrow-pc="{span:4}"-->
+<!--               :pc="{span:2}"-->
+<!--               :wide-pc="{span:1}"-->
+<!--        >1</g-col>-->
+<!--        <g-col span="24"-->
+<!--               :ipad="{span:16}"-->
+<!--               :narrow-pc="{span:20}"-->
+<!--               :pc="{span:22}"-->
+<!--               :wide-pc="{span:23}"-->
+<!--        >2</g-col>-->
+<!--    </g-row>-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col span="4" >1</g-col>-->
+<!--        <g-col :span="'20'" >2</g-col>-->
+<!--    </g-row>-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col span="4">1</g-col>-->
+<!--        <g-col :span="18" offset="2">2</g-col>-->
+<!--    </g-row>-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col span="4">1</g-col>-->
+<!--        <g-col :span="8" offset="2">2</g-col>-->
+<!--        <g-col :span="8" offset="2">2</g-col>-->
+<!--    </g-row>-->
+<!--    <g-row :gutter="20">-->
+<!--        <g-col span="4">1</g-col>-->
+<!--        <g-col :span="4" offset="6">2</g-col>-->
+<!--        <g-col :span="8" offset="2">2</g-col>-->
+<!--    </g-row>-->
+<!--    </div>-->
 
-    <div class="box">
-        <g-button :loadings="loading1" v-on:click="loading1=!loading1">
-            按钮
-        </g-button>
-        <g-button icon="setting" icon-position="right" :loadings="loading2" @click="loading2=!loading2">
-            按钮
-        </g-button>
-        <g-button icon="setting" :loadings="loading3" icon-position="left" @click="loading3=!loading3">
-            按钮
-        </g-button>
-        <g-button-group>
-            <g-button icon="left">上一页</g-button>
-            <g-button>更多</g-button>
-            <g-button icon="right" icon-position="right">下一页</g-button>
-        </g-button-group>
-        <div id="test"></div>
-    </div>
+<!--    <div class="box">-->
+<!--    <g-input valuea="张三" disableda></g-input>-->
+<!--    <g-input valuea="李四" readonlya></g-input>-->
+<!--    <g-input valuea="王五" ></g-input>-->
+<!--    </div>-->
+<!--    <div class="box">-->
+<!--    <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>-->
+<!--    <g-input valuea="王五" @changea="inputChange"></g-input>-->
+<!--&lt;!&ndash;    <g-input v-model="message"></g-input>&ndash;&gt;-->
+<!--    <g-input :valuea="message" @inputa="message=$event"></g-input>-->
+<!--        <button @click="message=message+1">+1</button>-->
+<!--        <span>{{message}}</span>-->
+<!--    </div>-->
+
+<!--    <div class="box">-->
+<!--        <g-button :loadings="loading1" v-on:click="loading1=!loading1">-->
+<!--            按钮-->
+<!--        </g-button>-->
+<!--        <g-button icon="setting" icon-position="right" :loadings="loading2" @click="loading2=!loading2">-->
+<!--            按钮-->
+<!--        </g-button>-->
+<!--        <g-button icon="setting" :loadings="loading3" icon-position="left" @click="loading3=!loading3">-->
+<!--            按钮-->
+<!--        </g-button>-->
+<!--        <g-button-group>-->
+<!--            <g-button icon="left">上一页</g-button>-->
+<!--            <g-button>更多</g-button>-->
+<!--            <g-button icon="right" icon-position="right">下一页</g-button>-->
+<!--        </g-button-group>-->
+<!--        <div id="test"></div>-->
+<!--    </div>-->
 </div>
 <script src="./src/app.js"></script>
 <!--<script src="//at.alicdn.com/t/font_1440191_uxj4g5ikgln.js"></script>-->

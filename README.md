@@ -930,7 +930,7 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
         >2</g-col>
     </g-row>
 ```
-* 如果需要上下结构，可以都设置为span：12,但是需要把row.vue里面增加`flex-wrap:wrap`,**因为默认是不换行的(nowrap)**.
+* 如果需要上下结构，可以都设置为span：24,但是需要把row.vue里面增加`flex-wrap:wrap`,**因为默认是不换行的(nowrap)**.
 ### 解决bug
 #### 默认设置为phone的样式
 * 目前如果五种都写了，那么默认的span就没有意义了，所以要选择一种作为默认的span。
@@ -952,6 +952,113 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
         >2</g-col>
 ```
 * 这里在电脑上用开发者工具调试窗口的时候显示的尺寸大小是浏览器尺寸，需要点击手机(toggle device toolbar)，然后通过**responsive的尺寸显示查看**
+#### 如果pc,narrowPc,widePc等等其中有一项没有写
+* 如果有某项没有写，那么就根据默认样式显示，这个就由自己决定，需要权衡：
+    1. 如果你面向手机的，那么你默认样式可以是phone，没有写的地方那就是phone的样式。如果你面向其他的，默认样式那就是其他样式。这是一个需求问题。
+    2. 另一种可以就近选择，不过这个不太好控制，因为多近才算近呢？并不知道离开哪个更近，比较麻烦。
+* 如何让响应式变得更加智能，就是**不要把限值写的太绝对，比如有一遍是一个开放的，并且把范围越大的放到越前面**。这样他就会尽量往下面（像素小的）靠。
+```
+        $class-prefix: col-;
+        @for $n from 1 through 24 {
+            &.#{$class-prefix}#{$n} {
+                width: $n / 24*100%;
+            }
+        }
+        $class-prefix: offset-;
+        @for $n from 1 through 24 {
+            &.#{$class-prefix}#{$n} {
+                margin-left: $n / 24*100%;
+            }
+        }
+        /*这个media查询是写在最下面，那么同样生效的同样的属性，上面的会被下面的覆盖掉，下面的样式优先级更高*/
+        @media (min-width: 577px){
+            $class-prefix: col-ipad-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-ipad-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+        @media (min-width: 769px){
+            $class-prefix: col-narrow-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-narrow-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+        @media (min-width: 993px){
+            $class-prefix: col-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+        @media (min-width: 1201px){
+            $class-prefix: col-wide-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    width: $n / 24*100%;
+                }
+            }
+            $class-prefix: offset-wide-pc-;
+            @for $n from 1 through 24 {
+                &.#{$class-prefix}#{$n} {
+                    margin-left: $n / 24*100%;
+                }
+            }
+        }
+```
+* 我们可以在index.html测试下
+```
+<style>
+    .demo{
+        background: grey;
+        height:100px;
+        border:1px solid red;
+    }
+</style>
+    <g-row>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+        <g-col span="24" :ipad="{span:12}" :narrow-pc="{span:8}">
+            <div class="demo"></div>
+        </g-col>
+    </g-row>
+```
+* 这也叫做mobile first。也就是移动端优先。也就是默认的就是移动端走，因为现在市场就是移动端的占大多数。
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)

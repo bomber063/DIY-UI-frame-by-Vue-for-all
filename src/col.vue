@@ -116,7 +116,7 @@
             }
         }
         /*这个media查询是写在最下面，那么同样生效的同样的属性，上面的会被下面的覆盖掉，下面的样式优先级更高*/
-        @media (min-width: 577px) and (max-width: 768px){
+        @media (min-width: 577px){
             $class-prefix: col-ipad-;
             @for $n from 1 through 24 {
                 &.#{$class-prefix}#{$n} {
@@ -130,7 +130,7 @@
                 }
             }
         }
-        @media (min-width: 769px) and (max-width: 992px){
+        @media (min-width: 769px){
             $class-prefix: col-narrow-pc-;
             @for $n from 1 through 24 {
                 &.#{$class-prefix}#{$n} {
@@ -144,7 +144,7 @@
                 }
             }
         }
-        @media (min-width: 993px) and (max-width: 1200px){
+        @media (min-width: 993px){
             $class-prefix: col-pc-;
             @for $n from 1 through 24 {
                 &.#{$class-prefix}#{$n} {
