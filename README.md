@@ -836,7 +836,7 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
             }
         }
         @media (min-width: 1201px){
-            $class-prefix: col-width-pc-;
+            $class-prefix: col-wide-pc-;
             @for $n from 1 through 24 {
                 &.#{$class-prefix}#{$n} {
                     width: $n / 24*100%;
@@ -932,8 +932,26 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
 ```
 * 如果需要上下结构，可以都设置为span：12,但是需要把row.vue里面增加`flex-wrap:wrap`,**因为默认是不换行的(nowrap)**.
 ### 解决bug
+#### 默认设置为phone的样式
 * 目前如果五种都写了，那么默认的span就没有意义了，所以要选择一种作为默认的span。
-* 如果这个UI定位是手机的UI框架，那么就把手机作为默认的样式，可以把phone删除了，把它作为默认的即可。
+* 如果这个UI定位是手机的UI框架，那么就把手机作为默认的样式，**可以把phone的内容删除了，把它作为默认的即可**。这里我发现之前`@media`代码写的一个错误就是`col-wide-pc-;`写成了`col-width-pc-`
+* 然后index.html上面代码就可以省去phone
+```
+    <g-row :gutter="20">
+        <g-col span="24"
+               :ipad="{span:8}"
+               :narrow-pc="{span:4}"
+               :pc="{span:2}"
+               :wide-pc="{span:1}"
+        >1</g-col>
+        <g-col span="24"
+               :ipad="{span:16}"
+               :narrow-pc="{span:20}"
+               :pc="{span:22}"
+               :wide-pc="{span:23}"
+        >2</g-col>
+```
+* 这里在电脑上用开发者工具调试窗口的时候显示的尺寸大小是浏览器尺寸，需要点击手机(toggle device toolbar)，然后通过**responsive的尺寸显示查看**
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)
