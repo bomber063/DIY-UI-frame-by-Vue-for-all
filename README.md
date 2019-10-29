@@ -1059,6 +1059,42 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
     </g-row>
 ```
 * 这也叫做mobile first。也就是移动端优先。也就是默认的就是移动端走，因为现在市场就是移动端的占大多数。
+### 继续重构优化重复的代码
+* 在col.vue里面用一个methods里面放一个函数
+```
+        methods:{
+                createClasses(obj,str=''){//这里的str=''是默认空字符串，也就是如果不传str就默认是''
+                    return obj ? [`col-${str}${obj.span}`,`offset-${str}${obj.offset}`]:[]
+                }
+        },
+```
+* 然后computed的colClass里面，我自己用的是三元运算符
+```
+            colClass(){
+                let {span,offset,ipad,narrowPc,pc,widePc}=this//这里增加phone
+
+                let {createClasses}=this
+                return[
+                    ...createClasses({span,offset}),//这个意思就是...createClasses({span:span,offset:offset})
+                    ...createClasses(ipad,'ipad-'),
+                    ...createClasses(narrowPc,'narrow-pc-'),
+                    ...createClasses(pc,'pc-'),
+                    ...createClasses(widePc,'widePc-')
+                ]
+            },
+```
+* 老师视频里面methods的代码稍微复杂一点，用的是if语句。
+```
+        methods:{
+                createClasses(obj,str=''){//这里的str=''是默认空字符串，也就是如果不传str就默认是''
+                    if(!obj){return []}
+                    let array=[]
+                    if(obj.span){array.push(`col-${str}${obj.span}`)}
+                    if(obj.offset){array.push(`offset-${str}${obj.offset}`)}
+                    return array
+                }
+        },
+```
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)

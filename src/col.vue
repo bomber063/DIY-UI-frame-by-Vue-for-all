@@ -72,17 +72,37 @@
                 gutter:0
             }
         },
+        methods:{
+                createClasses(obj,str=''){//这里的str=''是默认空字符串，也就是如果不传str就默认是''
+                    return obj ? [`col-${str}${obj.span}`,`offset-${str}${obj.offset}`]:[]
+                }
+            // createClasses(obj,str=''){//这里的str=''是默认空字符串，也就是如果不传str就默认是''
+            //     if(!obj){return []}
+            //     let array=[]
+            //     if(obj.span){array.push(`col-${str}${obj.span}`)}
+            //     if(obj.offset){array.push(`offset-${str}${obj.offset}`)}
+            //     return array
+            // }
+        },
         computed:{
             colClass(){
                 let {span,offset,ipad,narrowPc,pc,widePc}=this//这里增加phone
-
+                // let x=(obj,str='')=>{//这里的str=''是默认空字符串，也就是如果不传str就默认是''
+                //     return obj ? [`col-${str}${obj.span}`,`offset-${str}${obj.offset}`]:[]
+                // }
+                let {createClasses}=this
                 return[
-                    span&&`col-${span}`,
-                    offset&&`offset-${offset}`,
-                    ... ( ipad ? [`col-ipad-${ipad.span}`,`offset-ipad-${ipad.offset}`]:[]),
-                    ... ( narrowPc ? [`col-narrow-pc-${narrowPc.span}`,`offset-narrow-pc-${narrowPc.offset}`]:[]),
-                    ... ( pc ? [`col-pc-${pc.span}`,`offset-pc-${pc.offset}`]:[]),
-                    ... ( widePc ? [`col-wide-pc-${widePc.span}`,`offset-wide-pc-${widePc.offset}`]:[])
+                    ...createClasses({span,offset}),//这个意思就是...createClasses({span:span,offset:offset})
+                    ...createClasses(ipad,'ipad-'),
+                    ...createClasses(narrowPc,'narrow-pc-'),
+                    ...createClasses(pc,'pc-'),
+                    ...createClasses(widePc,'widePc-')
+                    // span&&`col-${span}`,
+                    // offset&&`offset-${offset}`,
+                    // ... ( ipad ? [`col-ipad-${ipad.span}`,`offset-ipad-${ipad.offset}`]:[]),
+                    // ... ( narrowPc ? [`col-narrow-pc-${narrowPc.span}`,`offset-narrow-pc-${narrowPc.offset}`]:[]),
+                    // ... ( pc ? [`col-pc-${pc.span}`,`offset-pc-${pc.offset}`]:[]),
+                    // ... ( widePc ? [`col-wide-pc-${widePc.span}`,`offset-wide-pc-${widePc.offset}`]:[])
                 ]//如果有phone就把phone里面的span和offset放到phoneClass里面去
             },
             colStyle(){
