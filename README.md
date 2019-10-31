@@ -1095,6 +1095,177 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
                 }
         },
 ```
+***
+* 目前完成的功能
+    1. 一个24列布局
+    2. 中间可以增加空隙。
+    3. 它是响应式的。
+***
+### 开始写测试用例
+* 分别创建col.test.js和row.test.js
+* row的props里面有两个参数
+    1. gutter
+    2. align
+    * 没有事件
+* 因为是CSS属性需要渲染到页面中才可以测试，所以这里需要挂载到页面，也就是amount到自己创建的div(这个div是挂载到body上面，不可以直接挂载到body上面)
+* 另外row里面还需要有个col。所以需要引入row的同时还需要引入col。
+* 首先测试存在Row，然后测试接受接受gutter属性。
+```
+describe('Row', () => {
+    '存在Row'
+    it('存在.', () => {
+        expect(Row).to.exist
+    })
+    it('接受gutter属性',()=>{
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        const RowConstructor = Vue.extend(Row);
+        const row = new RowConstructor({
+            propsData: {
+                gutter: 10
+            }
+        }).$mount(div);
+        const ColConstructor = Vue.extend(Col);
+        const col = new ColConstructor();
+
+        row.$destroy();
+        col.$destroy()
+
+    })
+})
+```
+* 但是上面的测试是有问题的，因为父组件row在mounted的时候，子组件col还没有amounted。所以要先把子组件col和父组件row联系起来（也就是把一个组件做成另一个组件的子组件。）这个在html很好写，就像如下写就可以实现一个组件是另一个族简单的子组件
+```
+<g-row>
+   <g-col>
+   <g-col>
+</g-row>
+```
+#### 如何动态的向row组件里面创建一个子组件col
+* 因为在row.vue里面获取padding，根据前面的测试，会获取两次。第一次是0，第二次才是row传入的gutter参数给col。
+```
+            colStyle(){
+                console.log('获取padding')//这里会获取两次
+
+                // console.log(`在子组件col里面，因为gutter在computed里面变成了${this.gutter}，所以我也要变化`)
+                return {
+                    paddingLeft:this.gutter/2+'px',
+                    paddingRight:this.gutter/2+'px'
+                }
+            }
+```
+* 用js代码暂时搜索不到怎么写，但是可以用下面的html标签的方法。
+* 而在mocha里面，默认只会打印一次（第一次的时候gutter还没有传过来），所以需要等父组件row把gutter传参给给子组件col
+* 我们需要等这个过程（因为Vue的create和amount就是异步的），等的这个过程就需要异步函数，那么就需要用到setTimeout。如果是异步函数的调用mocha默认也需要用到[done](https://mochajs.org/#detects-multiple-calls-to-done)这个函数。
+```
+    it('接受gutter属性',(done)=>{//这个测试框架默认打印一次之后会马上退出，如果要等异步的函数，需要用到这个done
+        Vue.component('g-row',Row)
+        Vue.component('g-col',Col)
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        //用js代码暂时搜索不到怎么写，但是可以用下面的html标签的方法。
+        div.innerHTML=`
+        <g-row gutter="20">
+            <g-col span="12"></g-col>
+            <g-col span="12"></g-col>
+        </g-row>
+        `
+        const vm=new Vue({
+            el:div
+        })
+        // console.log(vm.$el.outerHTML)
+        console.log(vm.$el.outerHTML)//这里的padding-left和right是0px
+
+        setTimeout(()=>{
+
+            console.log('我是setTimeout',vm.$el.outerHTML)//这里的padding-left和right是10px
+            done()//这个测试框架默认打印一次之后会马上退出，如果要等异步的函数，需要调用这个done,也就是done()
+
+        },0)//就算设置为0也是异步，就是下一次的时候在打印
+
+
+        // vm.$destroy();//如果设置了这个就清楚了vm，清除vm是在异步之前，那么就导致打印的padding-left和right都是0px
+
+    })
+```
+***
+* 详细的解释下
+* 我们再看看前面说的创建过程，原生的创建是同步的，**但是Vue的创建却是异步的。具体见下面(至于为什么不是同步的，可能是基于性能，这里只是猜测。)**
+```
+    var div=document.createElement('div')//father 原生JS是同步的created
+    var childDiv=document.createElement('div')// 原生JS是同步的child created
+    div.appendChild(childDiv)// 原生JS是同步的child mounted，这一步和上一步之间在Vue里面是异步的。因为它的钩子的调用不是同步的。如果这里在Vue里面的mounted钩子完成需要两秒钟，那么Vue会优先完成渲染而不会等这两秒钟。这个也是猜测
+    document.body.appendChild(div)// 原生JS是同步的father mounted，父组件同样在Vue里面调用mounted钩子
+    //如果里面增加一个console.log(div.outerHTML)此时就是一个队列，最先是console.log()打印，因为他是同步的，然后队列里面显示子组件mounted钩子，然后父组件mounted钩子，
+```
+* 为了主动来等这个Vue的异步函数，我们就需要用setTimeout，这样**上面的任务队列就会由最先放到最后。**
+* **mocha里面如果不加done，不管你有没有写setTimeout，默认都是同步的，在你执行setTimeout这个函数的时候，还没有执行这个函数的内容就直接退出页面，页面退出那么setTimeout就会销毁了。所以需要增加done**
+* 在mocha里面异步最长是等待不超过2秒，不然会报错。
+***
+*  针对gutter这个自定义组件变量测试，我们通过[getComputedStyle](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/getComputedStyle)就可以找到paddingLeft和paddingRight啦。
+```
+    it('接受gutter属性',(done)=>{//这个测试框架默认打印一次之后会马上退出，如果要等异步的函数，需要用到这个done
+        Vue.component('g-row',Row)
+        Vue.component('g-col',Col)
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        //用js代码暂时搜索不到怎么写，但是可以用下面的html标签的方法。
+        div.innerHTML=`
+        <g-row gutter="20">
+            <g-col span="12"></g-col>
+            <g-col span="12"></g-col>
+        </g-row>
+        `
+        const vm=new Vue({
+            el:div
+        })
+        // console.log(vm.$el.outerHTML)
+        console.log(vm.$el.outerHTML)//这里的padding-left和right是0px
+
+        setTimeout(()=>{
+
+            console.log('我是setTimeout',vm.$el.outerHTML)//这里的padding-left和right是10px
+            const cols=vm.$el.querySelectorAll('.col')
+            const row=vm.$el.querySelector('.row')
+
+            console.log(cols)
+            expect(getComputedStyle(row).marginRight).to.equal('-10px')//这里需要用到window.getComputedStyle
+            expect(getComputedStyle(row).marginLeft).to.equal('-10px')//这里需要用到window.getComputedStyle
+
+            expect(getComputedStyle(cols[0]).paddingRight).to.equal('10px')//这里需要用到window.getComputedStyle
+            expect(getComputedStyle(cols[1]).paddingLeft).to.equal('10px')//这里需要用到window.getComputedStyle
+
+            done()//这个测试框架默认打印一次之后会马上退出，如果要等异步的函数，需要调用这个done,也就是done()
+            vm.$destroy()//这个销毁也要写到异步函数里面
+
+
+        },0)//就算设置为0也是异步，就是下一次的时候在打印
+
+
+
+        // vm.$destroy();//如果设置了这个就清楚了vm，清除vm是在异步之前，那么就导致打印的padding-left和right都是0px
+
+    })
+```
+* align这个自定义属性参数测试，**这里我犯了一个原生querySelector()的低级错误，说明基础不好，具体见下面代码注释说明**
+```
+    it('可以接收align属性', () => {
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        const Constructor = Vue.extend(Row);
+        const vm = new Constructor({
+            propsData: {
+                align: 'left'
+            }
+        }).$mount(div);//因为要用到CSS属性没所以需要渲染后，所以要挂载到div上面
+        const row= vm.$el;//因为挂载到div上面，所以就在div根元素就是div自己。
+        //element.querySelector()是找element元素的第一个子元素的选择器。
+        //document.querySelector()是找html根元素第一个元素的选择器
+        expect(getComputedStyle(row).justifyContent).to.equal('flex-start')//这里需要用到window.getComputedStyle
+        div.remove()
+        vm.$destroy()
+    })
+```
 ### 其他网格系统参考
 * [ant.design](https://ant.design/docs/react/introduce-cn)
 * [ant,design的grid](https://ant.design/components/grid-cn/)
