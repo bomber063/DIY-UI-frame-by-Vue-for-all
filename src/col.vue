@@ -96,7 +96,7 @@
                     ...createClasses(ipad,'ipad-'),
                     ...createClasses(narrowPc,'narrow-pc-'),
                     ...createClasses(pc,'pc-'),
-                    ...createClasses(widePc,'widePc-')
+                    ...createClasses(widePc,'wide-pc-')
                     // span&&`col-${span}`,
                     // offset&&`offset-${offset}`,
                     // ... ( ipad ? [`col-ipad-${ipad.span}`,`offset-ipad-${ipad.offset}`]:[]),

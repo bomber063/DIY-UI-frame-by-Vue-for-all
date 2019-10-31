@@ -1102,6 +1102,7 @@ xxl	≥1600px 响应式栅格，可为栅格数或一个包含其他属性的对
     3. 它是响应式的。
 ***
 ### 开始写测试用例
+#### row.vue的测试用例
 * 分别创建col.test.js和row.test.js
 * row的props里面有两个参数
     1. gutter
@@ -1262,6 +1263,46 @@ describe('Row', () => {
         //element.querySelector()是找element元素的第一个子元素的选择器。
         //document.querySelector()是找html根元素第一个元素的选择器
         expect(getComputedStyle(row).justifyContent).to.equal('flex-start')//这里需要用到window.getComputedStyle
+        div.remove()
+        vm.$destroy()
+    })
+```
+#### col.vue的测试用例
+* 这个组件里面有很多props，但是测试不难，因为都是class，所以要用到[element.classList](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/classList)里面的**contains属性**,这里就写一个span和ipad。因为其他的都是一样的，
+* span
+```
+    it('接受span属性',()=>{
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        const Constructor = Vue.extend(Col);
+        const vm = new Constructor({
+            propsData: {
+                span: '3'
+            }
+        }).$mount(div);//因为要用到CSS属性没所以需要渲染后，所以要挂载到div上面
+        const col= vm.$el;//因为挂载到div上面，所以就在div根元素就是div自己。
+        expect(col.classList.contains('col-3')).to.equal(true)
+        div.remove()
+        vm.$destroy()
+    })
+```
+* widePc,这里我的在传字符串的时候错写成widePc了，应该是wide-pc。
+```
+    it('接受widePc属性',()=>{
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        const Constructor = Vue.extend(Col);
+        const vm = new Constructor({
+            propsData: {
+                widePc: {
+                    span:3,
+                    offset:4
+                }
+            }
+        }).$mount(div);//因为要用到CSS属性没所以需要渲染后，所以要挂载到div上面
+        const col= vm.$el;//因为挂载到div上面，所以就在div根元素就是div自己。
+        expect(col.classList.contains('col-wide-pc-3')).to.equal(true)
+        expect(col.classList.contains('offset-wide-pc-4')).to.equal(true)
         div.remove()
         vm.$destroy()
     })
