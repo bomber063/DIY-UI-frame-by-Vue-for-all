@@ -284,7 +284,9 @@
     }
 </style>
 ```
-
+### 下一节用toast和Tab
+* 可以参考[framework7](http://www.framework7.cn/docs/toast.html)的toast。toast是烤面包，这个功能就点击一下会弹出一个东西，就很像烤面包机。
+* Tab可以参考[ant.design的Tabs](https://ant.design/components/tabs-cn/)和[element的Tabs](https://element.eleme.cn/2.0/#/zh-CN/component/tabs)
 
 
 
