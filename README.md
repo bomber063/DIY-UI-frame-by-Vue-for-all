@@ -378,7 +378,7 @@ new Vue({
         3col.vue:24 col mounted//接着三个子组件 col mounted
         row.vue:17 row mounted//最后是父组件 row mounted
         ```
-    * 我们知道了这个创建和挂在到页面的顺序有什么用，**我们看到最后一个是父组件row mounted，那么我们只需要通过父组件的mounted钩子就可以知道所有子子孙孙的组件都已经挂在到了页面中了。就可以获取到它们。**我们在父组件上面通过forEach循环把获取的gutter传递给子组件的gutter
+    * 我们知道了这个创建和挂在到页面的顺序有什么用，**我们看到最后一个是父组件row mounted，那么我们只需要通过父组件的mounted钩子就可以知道所有子子孙孙的组件都已经挂在到了页面中了。就可以获取到它们**。我们在父组件上面通过forEach循环把获取的gutter传递给子组件的gutter
         ```
                 mounted(){
                     this.$children.forEach((x)=>{
