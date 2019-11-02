@@ -159,6 +159,132 @@
 </style>
 ```
 * 第1,2,3种布局也可以通过flex-grow来调节宽度。
+### 稍微增加颜色深度样式和关闭的交互操作
+* 我们增加的CSS样式
+```
+    .sider{
+        background: #333;
+        width: 200px;
+    }
+    .header{
+        background:#999;
+        height: 100px;
+    }
+    .footer{
+        background: #ccc;
+        height:50px;
+    }
+```
+* 增加[v-if](https://cn.vuejs.org/v2/guide/conditional.html#v-if)，v-if 指令用于条件性地渲染一块内容。这块内容只会在指令的表达式返回 truthy 值的时候被渲染。在点击事件触发的时候，这个true变成false就会不渲染，那么就隐藏了。sider组件里面的内容。
+```
+<template>
+    <div class="sider" v-if="visible">
+        <slot></slot>
+        <button @click="visible=false">close</button>
+    </div>
+</template>
+
+<script>
+    export default {
+        name:'GuluSider',
+        data(){
+            return{
+                visible:true
+            }
+        }
+    }
+</script>
+
+<style lang="scss" scoped>
+    .sider{
+        position: relative;
+        button{
+            position: absolute;
+            top:0;
+            right:0;
+        }
+    }
+</style>
+```
+### 增加动画
+* 用到[transition](https://cn.vuejs.org/v2/api/#transition)
+* 在sider组件上用transition把要动画的元素包起来。
+```
+<template>
+    <transition name="fade">
+        <div class="sider" v-if="visible">
+            <slot></slot>
+            <button @click="visible=false">close</button>
+        </div>
+    </transition>
+</template>
+```
+* 在sider组件上,增加动画的CSS
+```
+<style lang="scss" scoped>
+    .sider {
+        position: relative;
+
+        button {
+            position: absolute;
+            top: 0;
+            right: 0;
+        }
+    }
+    .fade-enter-active, .fade-leave-active {
+        transition: all .5s;
+    }
+    .fade-enter, .fade-leave-to {
+        /*这个200px就是sider的宽度,但是作为用户可能并知道这个像素是多少，就需要通过JS来操作，目前暂时不用它，后续用到再说*/
+        margin-left: -200px;
+    }
+</style>
+```
+* 因为这个这个200px就是sider的宽度,但是作为用户可能并知道这个像素是多少，最好要告诉用户在index.html上面加上样式,使得sider的宽度等于这个过度的动画变化宽度即可.
+```
+<style>
+    .sider{
+        background: #333;
+        width: 300px;
+    }
+    .sider.fade-enter, .sider.fade-leave-to {
+        /*这个200px就是sider的宽度,但是作为用户可能并知道这个像素是多少，就需要通过JS来操作，目前暂时不用它，后续用到再说*/
+        margin-left: -300px;
+    }
+</style>
+```
+* 作为用户可能并知道这个像素是多少，就需要通过[JavaScript-钩子](https://cn.vuejs.org/v2/guide/transitions.html#JavaScript-%E9%92%A9%E5%AD%90)来操作，目前暂时不用它，后续用到再说
+#### 动画小结
+1. 首先在要动的元素上面加上transition标签
+2. 在transition写上面属性name，用于自动生成 CSS 过渡类名。例如：name: 'fade' 将自动拓展为.fade-enter，.fade-enter-active等。默认类名为 "v",这个name的名字可以随便取，最好是取名跟动画样子差不多，让人比较好理解
+3. 增加动画样式名字,比如你用的name是slide，那么动画样式名字
+    * 这两个样式代表进出的时候动画的时长
+    ```
+        .slide-enter-active, .slide-leave-active {
+            transition: all .5s;
+        }
+
+    ```
+    * 这个样式代表你开始和结束的时候的CSS某个属性的状态
+    ```
+        .slide-enter, .slide-leave-to {
+            /*这个200px就是sider的宽度,但是作为用户可能并知道这个像素是多少，就需要通过JS来操作，目前暂时不用它，后续用到再说*/
+            margin-left: -200px;
+        }
+    ```
+4. 用户对这个-200px宽度不满意，还可以在index.html上修改为别的值，比如-400px
+```
+<style>
+    .sider{
+        background: #333;
+        width: 400px;
+    }
+    .sider.slide-enter, .sider.slide-leave-to {
+        margin-left: -400px;
+    }
+</style>
+```
+
 
 
 
