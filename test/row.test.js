@@ -27,16 +27,16 @@ describe('Row', () => {
             el:div
         })
         // console.log(vm.$el.outerHTML)
-        console.log(vm.$el.outerHTML)//这里的padding-left和right是0px
+        // console.log(vm.$el.outerHTML)//这里的padding-left和right是0px
 
         setTimeout(()=>{
 
-            console.log('我是setTimeout',vm.$el.outerHTML)//这里的padding-left和right是10px
+            // console.log('我是setTimeout',vm.$el.outerHTML)//这里的padding-left和right是10px
             const cols=vm.$el.querySelectorAll('.col')
             const row=vm.$el.querySelector('.row')
 
 
-            console.log(cols)
+            // console.log(cols)
             expect(getComputedStyle(row).marginRight).to.equal('-10px')//这里需要用到window.getComputedStyle
             expect(getComputedStyle(row).marginLeft).to.equal('-10px')//这里需要用到window.getComputedStyle
 
