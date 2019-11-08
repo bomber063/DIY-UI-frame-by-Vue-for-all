@@ -51,14 +51,21 @@ new Vue({
         // setInterval(()=>{
         //     this.message=this.message+'1'
         // },1000)
+        this.$toast('<p>段落<strong>hi<a href="http://www.qq.com">qq</a></strong></p>',{
+            closeButton: {
+                text: '关闭',
+                callback(a) {
+                    a.log()
+                }
+            },
+            enableHtml: false
+        })
 
 
 
     },
     methods:{
         showToast(){
-            this.$toast('当前方法不稳定，如果遇到bug请关闭该功能')
         }
-
     }
 })
