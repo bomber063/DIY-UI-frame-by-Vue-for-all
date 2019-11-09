@@ -1,9 +1,11 @@
 <template>
-    <div class="toast" ref="wrapper">
-<!--        如果没有enableHtml，就用 slot-->
-        <slot v-if="!enableHtml"></slot>
-<!--        如果有enableHtml,就用下面的div-->
-        <div v-if="enableHtml" v-html="$slots.default"></div>
+    <div class="toast" ref="wrapper" :class="toastClasses">
+        <div class="message">
+            <!--        如果没有enableHtml，就用 slot-->
+            <slot v-if="!enableHtml"></slot>
+            <!--        如果有enableHtml,就用下面的div-->
+            <div v-if="enableHtml" v-html="$slots.default"></div>
+        </div>
 <!--        因为在plugin.js里面传入参数的时候就是toast.$slots.default=message-->
         <div class="line" ref="line"></div>
         <span class="close" v-if="closeButton" @click="onClickClose">
@@ -36,23 +38,39 @@
             enableHtml:{
                 type:Boolean,
                 default:false
+            },
+            position:{
+                type:String,
+                default:'top',
+                validator(value){
+                    return ['top','bottom','middle'].indexOf(value)>=0
+                }
+            }
+        },
+        computed:{
+          toastClasses(){
+              return {
+               [`position-${this.position}`]:true//这里要加一个中括号
+          }
             }
         },
         mounted(){
-            if(this.autoClose){//mounted之后会定时的关闭自己
-                setTimeout(()=>{
-                  this.close()
-                },this.autoCloseDelay*1000)
-            }
-            this.$nextTick(()=>{
-                this.$refs.line.style.height=`${this.$refs.wrapper.getBoundingClientRect().height}px`
-                console.log(this.$refs.line.style.height)
-                console.log(this.$refs.wrapper.getBoundingClientRect().height)
-            })
-
-
+            this.updateStyles()
+            this.execAutoClose()
         },
         methods:{//两个方法函数
+            updateStyles(){
+                this.$nextTick(()=>{
+                    this.$refs.line.style.height=`${this.$refs.wrapper.getBoundingClientRect().height}px`
+                })
+            },
+            execAutoClose(){
+                if(this.autoClose){//mounted之后会定时的关闭自己
+                    setTimeout(()=>{
+                        this.close()
+                    },this.autoCloseDelay*1000)
+                }
+            },
             close(){//关闭自己
                 this.$el.remove()//把这个元素删除
                 this.$destroy()//他会把绑定的事件取消掉
@@ -80,9 +98,9 @@
         line-height:1.8;
         min-height: $toast-min-height;
         position:fixed;
-        top:0;
+        /*top:0;*/
         left:50%;
-        transform:translateX(-50%);
+        /*<!--transform:translateX(-50%);-->*/
         display:flex;
         color:white;
         align-items: center;
@@ -91,6 +109,9 @@
         box-shadow:0px 0px 3px 0px rgba(0,0,0,0.50);
         padding:0 16px;
     /*    一般padding都是4或者8的倍数*/
+        .message{
+            padding:8px 0;
+        }
         .close{
             padding-left:16px;
             flex-shrink: 0;
@@ -99,6 +120,18 @@
             border-left:1px solid #666;
             height:100%;
             margin-left:16px;
+        }
+        &.position-top{
+            top:0;
+            transform:translateX(-50%);
+        }
+        &.position-bottom{
+            bottom:0;
+            transform:translateX(-50%);
+        }
+        &.position-middle{
+            top:50%;
+            transform:translate(-50%,-50%);
         }
     }
 

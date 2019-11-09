@@ -51,14 +51,17 @@ new Vue({
         // setInterval(()=>{
         //     this.message=this.message+'1'
         // },1000)
-        this.$toast('<p>段落<strong>hi<a href="http://www.qq.com">qq</a></strong></p>',{
+        this.$toast('你的智商需要充值！',{
             closeButton: {
-                text: '关闭',
-                callback(a) {
-                    a.log()
+                text: '已充值',
+                callback() {
+                    console.log('他说已经充值智商了')
                 }
             },
-            enableHtml: false
+            autoClose:false,
+            autoCloseDelay:3,
+            enableHtml: false,
+            position:'middle'
         })
 
 

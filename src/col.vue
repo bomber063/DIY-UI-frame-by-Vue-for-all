@@ -9,7 +9,8 @@
         let keys = Object.keys(value)//把对象value的key组成数组返回，并赋值给keys
         let valid = true
         keys.forEach((value) => {
-            if (!['span', 'offset'].includes(value)) {//如果value是在数组['span','offset']里面的值就返回true
+            //我这里把includes修改为indexOf
+            if (['span', 'offset'].indexOf(value)===-1) {//如果value是在数组['span','offset']里面的值就返回true
                 valid = false
 
             }

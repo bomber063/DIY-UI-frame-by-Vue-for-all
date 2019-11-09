@@ -632,6 +632,83 @@ Vue.component('my-component-name', {
 * 解决这个BUG就是在mounted之后，在**异步(vm.$nextTick，也就是下一次事件队列执行的时候)的前提**下用`ref`和`Element.getBoundingClientRect()`把这个高度用JS赋值做修改
 * 从`height`修改为`min-height`的[JSbin示例](https://jsbin.com/fobofurabu/1/edit?html,css,js,output)
 ***
+### 重构部分重复或者难理解的代码及增加位置样式
+* 首先把toast.vue组件的mounted()里面的下面的代码
+```
+        if(this.autoClose){//mounted之后会定时的关闭自己
+            setTimeout(()=>{
+                this.close()
+            },this.autoCloseDelay*1000)
+        }
+```
+* 写成一个函数execAutoClose()，就是自动关闭
+```
+        execAutoClose(){
+            if(this.autoClose){//mounted之后会定时的关闭自己
+                setTimeout(()=>{
+                    this.close()
+                },this.autoCloseDelay*1000)
+            }
+        },
+```
+* toast.vue组件里面mounted()之后更新高度的代码
+```
+        mounted(){
+            this.$nextTick(()=>{
+                this.$refs.line.style.height=`${this.$refs.wrapper.getBoundingClientRect().height}px`
+            })
+        },
+```
+* 写成一个函数
+```
+        updateStyles(){
+            this.$nextTick(()=>{
+                this.$refs.line.style.height=`${this.$refs.wrapper.getBoundingClientRect().height}px`
+            })
+        },
+```
+#### 增加toast出现在不同位置
+* 在toast.vue组件上增加一个位置自定义属性position,这里同样需要增加一个自定义验证函数validator。这里为了考虑兼容性问题，我们把[includes](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/includes)改为[indexOf](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/indexOf),因为indexOf可以兼容IE9,includes不支持。
+```
+            position:{
+                type:String,
+                default:'top',
+                validator(value){
+                    return ['top','bottom','middle'].indexOf(value)>=0
+                }
+            }
+```
+* 接着我们在[computed](https://cn.vuejs.org/v2/api/#computed)里面增加toastClasses,因为toastClasses是根据this.position计算数来的属性，position才是自定义的属性。
+```
+        computed:{
+          toastClasses(){
+              return {
+               [`position-${this.position}`]:true//这里要加一个中括号
+          }
+            }
+        },
+```
+* 并且在toast.vue的div上绑定class
+```
+    <div class="toast" ref="wrapper" :class="toastClasses">
+```
+* 这样就给toast.vue组件加上了class，当我们设置position为bottom的时候，那么就会有position-bottom的class了
+* 注意这里使用了**属性名使用了表达式，那么作为属性需要加上中括号[]**,根据[ES 6 新特性列表](https://fangyinghang.com/es-6-tutorials/)的[属性名支持表达式——对象属性加强的计算属性名](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Object_initializer#ECMAScript_6%E6%96%B0%E6%A0%87%E8%AE%B0),从ECMAScript 2015开始，对象初始化语法开始支持计算属性名。其允许在[]中放入表达式，计算结果可以当做属性名。
+* 然后增加样式,把需要改变的样式从父元素里面单独拿出来，比如top,bottom,center还有transform.
+```
+        &.position-top{
+            top:0;
+            transform:translateX(-50%);
+        }
+        &.position-bottom{
+            bottom:0;
+            transform:translateX(-50%);
+        }
+        &.position-middle{
+            top:50%;
+            transform:translate(-50%,-50%);
+        }
+```
 
     
 

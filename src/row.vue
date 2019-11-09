@@ -12,7 +12,8 @@
             align:{
                 type:String,
                 validator(value){
-                    return['left','right','center'].includes(value)//下面的也是一样的效果。
+                    //           我这里把includes修改为indexOf
+                    return['left','right','center'].indexOf(value)>=0//下面的也是一样的效果。
                     // return['left','right','center'].indexOf(value)!==-1
                 }
             }
