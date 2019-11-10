@@ -73,6 +73,7 @@
             },
             close(){//关闭自己
                 this.$el.remove()//把这个元素删除
+                this.$emit('beforeClose')//触发一个关闭之前操作的事件，他就是把toast设置为undefined
                 this.$destroy()//他会把绑定的事件取消掉
             },
             log(){

@@ -758,6 +758,38 @@ export default {
         }
     }
 ```
+#### 除了一个小BUG
+* **因为前面的代码仅仅是关闭了toast，但是它还是存在的，只是没有在页面里面，那么我们需要把它设置为null,其实下面这段代码执行了两次，第一次是上一个关闭close的但是没有设置为null的currentToast（只是关闭了，眼睛看不到而已），第二个是新的currentToast**。
+```
+            if(currentToast) {//如果有toast，就关闭这个toast。
+                currentToast.close()
+            }
+```
+* 在toast里面增加`this.$emit('beforeClose')`,[$emit](https://cn.vuejs.org/v2/api/#vm-emit)是触发事件，beforeClose是子组件的的一个自定义事件
+```
+            close(){//关闭自己
+                this.$el.remove()//把这个元素删除
+                this.$emit('beforeClose')//触发一个关闭之前操作的事件，他就是把toast设置为undefined
+                this.$destroy()//他会把绑定的事件取消掉
+            },
+```
+* 在plugin.js插件上通[$on](https://cn.vuejs.org/v2/api/#vm-on)触发一个事件的回调函数，这个回调函数就是把当前的currentToast赋值为null，**那么在关闭的时候，只会去关闭一次了**，也就是下一次的currentToast。
+```
+function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构赋值，把
+    toast.$on('beforeClose',onClose)
+}
+
+    currentToast=createToast({
+        Vue,
+        message,
+        propsData:toastOptions,
+        onClose:()=>{
+            currentToast=null//关闭前把currentToast赋值为null，因为前面的close之后，currentToast其实还是存在的。
+        }
+    })
+```
+### 实现toast出现的动画
+* 这里用CSS实现动画。
 
     
 
