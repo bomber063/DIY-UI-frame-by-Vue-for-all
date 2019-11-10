@@ -1,16 +1,18 @@
 <template>
-    <div class="toast" ref="wrapper" :class="toastClasses">
-        <div class="message">
-            <!--        如果没有enableHtml，就用 slot-->
-            <slot v-if="!enableHtml"></slot>
-            <!--        如果有enableHtml,就用下面的div-->
-            <div v-if="enableHtml" v-html="$slots.default"></div>
-        </div>
-<!--        因为在plugin.js里面传入参数的时候就是toast.$slots.default=message-->
-        <div class="line" ref="line"></div>
-        <span class="close" v-if="closeButton" @click="onClickClose">
+    <div class="wrapper" :class="toastClasses">
+        <div class="toast" ref="toast" >
+            <div class="message">
+                <!--        如果没有enableHtml，就用 slot-->
+                <slot v-if="!enableHtml"></slot>
+                <!--        如果有enableHtml,就用下面的div-->
+                <div v-if="enableHtml" v-html="$slots.default"></div>
+            </div>
+            <!--        因为在plugin.js里面传入参数的时候就是toast.$slots.default=message-->
+            <div class="line" ref="line"></div>
+            <span class="close" v-if="closeButton" @click="onClickClose">
             {{closeButton.text}}
         </span>
+        </div>
     </div>
 </template>
 
@@ -61,7 +63,7 @@
         methods:{//两个方法函数
             updateStyles(){
                 this.$nextTick(()=>{
-                    this.$refs.line.style.height=`${this.$refs.wrapper.getBoundingClientRect().height}px`
+                    this.$refs.line.style.height=`${this.$refs.toast.getBoundingClientRect().height}px`
                 })
             },
             execAutoClose(){
@@ -94,13 +96,66 @@
     $font-size:14px;
     $toast-min-height:40px;
     $toast-bg:rgba(0,0,0,0.75);
+    $animation-duration:300ms;
+    @keyframes fade-in {
+        0%{
+            opacity: 0;
+        }
+        100%{
+            opacity: 100%;
+        }
+    }
+    @keyframes slide-up {
+        0%{
+            transform:translateY(100%)
+        }
+        100%{
+            transform:translateY(0%)
+        }
+    }
+    @keyframes slide-down {
+        0%{
+            transform:translateY(-100%)
+        }
+        100%{
+            transform:translateY(0%)
+        }
+    }
+    .wrapper{
+        left:50%;
+        position:fixed;
+        &.position-top{
+            top:0;
+            transform:translateX(-50%);
+            .toast{
+                animation:slide-down $animation-duration,fade-in $animation-duration;
+                border-top-left-radius: 0px;
+                border-top-right-radius: 0px;
+            }
+        }
+        &.position-bottom{
+            bottom:0;
+            transform:translateX(-50%);
+            .toast{
+                animation:slide-up $animation-duration,fade-in $animation-duration;
+                border-bottom-left-radius: 0px;
+                border-bottom-right-radius: 0px;
+            }
+        }
+        &.position-middle{
+            top:50%;
+            transform:translate(-50%,-50%);
+            animation:fade-in $animation-duration;
+        }
+    }
     .toast{
+        /*<!--animation:fade-in $animation-duration;-->*/
         font-size: $font-size;
         line-height:1.8;
         min-height: $toast-min-height;
-        position:fixed;
+        /*position:fixed;*/
         /*top:0;*/
-        left:50%;
+        /*left:50%;*/
         /*<!--transform:translateX(-50%);-->*/
         display:flex;
         color:white;
@@ -121,18 +176,6 @@
             border-left:1px solid #666;
             height:100%;
             margin-left:16px;
-        }
-        &.position-top{
-            top:0;
-            transform:translateX(-50%);
-        }
-        &.position-bottom{
-            bottom:0;
-            transform:translateX(-50%);
-        }
-        &.position-middle{
-            top:50%;
-            transform:translate(-50%,-50%);
         }
     }
 

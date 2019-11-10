@@ -788,8 +788,85 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
         }
     })
 ```
-### 实现toast出现的动画
-* 这里用CSS实现动画。
+### 优化toast出现的三种动画效果
+* 这里用CSS实现动画。对于上面top和下面的bottom需要在加一层div，因为transform既用来做居中又用来做动画，那么后面的会覆盖前面的。所以需要增加一层div。
+* **为了防止冲突把原来的wrapper修改为toast**，然后**外面**增加一层的div的class叫做wrapper，把所有负责**居中相关**的弄到外面一层的class为**wrapper**的上面去,负责**动画**的放到class为**toast**上面
+```
+<template>
+    <div class="wrapper" :class="toastClasses">
+        <div class="toast" ref="toast" >
+
+        </div>
+    </div>
+</template>
+```
+* [多个动画用逗号分开](https://developer.mozilla.org/zh-CN/docs/Web/CSS/animation),并且bottom最下面和top的最上面是没有圆角的
+```
+    .wrapper{
+        left:50%;
+        position:fixed;
+        &.position-top{
+            top:0;
+            transform:translateX(-50%);
+            .toast{
+                animation:slide-down $animation-duration,fade-in $animation-duration;
+                border-top-left-radius: 0px;
+                border-top-right-radius: 0px;
+            }
+        }
+        &.position-bottom{
+            bottom:0;
+            transform:translateX(-50%);
+            .toast{
+                animation:slide-up $animation-duration,fade-in $animation-duration;
+                border-bottom-left-radius: 0px;
+                border-bottom-right-radius: 0px;
+            }
+        }
+        &.position-middle{
+            top:50%;
+            transform:translate(-50%,-50%);
+            animation:fade-in $animation-duration;
+        }
+    }
+```
+* 在index.html里面创建三个button来分别设置上中下位置
+```
+<div id="app">
+    <button @click="showToastTop">top</button>
+    <button @click="showToastMiddle">middle</button>
+    <button @click="showToastBottom">bottom</button>
+</div>
+```
+* 因为只是position不同，所以在app.js里面只需要调用showToast函数的时候，传入不同的position即可
+```
+    methods:{
+        showToastTop() {
+            this.showToast('top')
+        },
+        showToastMiddle() {
+            this.showToast('middle')
+        },
+        showToastBottom() {
+            this.showToast('bottom')
+        },
+        showToast(position){
+            this.$toast(`你的智商为${parseInt(Math.random()*100)}需要充值！`,{
+                closeButton: {
+                    text: '已充值',
+                    callback() {
+                        console.log('他说已经充值智商了')
+                    }
+                },
+                autoClose:false,
+                autoCloseDelay:3,
+                enableHtml: false,
+                position
+            })
+        }
+    }
+```
+
 
     
 
