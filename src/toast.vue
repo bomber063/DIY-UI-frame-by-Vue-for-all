@@ -22,13 +22,17 @@
         name:'GuluToast',
         props:{
             autoClose:{//是否自动关闭
-                type:Boolean,
-                default:true
+                type:[Boolean,Number],
+                default:5,
+                validator(value){
+                  console.log(value);
+                    return value === false || typeof value === 'number';
+                }
             },
-            autoCloseDelay:{//自动关闭的延迟时间
-                type:Number,
-                default: 50
-            },
+            // autoCloseDelay:{//自动关闭的延迟时间
+            //     type:Number,
+            //     default: 5
+            // },
             closeButton: {//是否有关闭按钮
                 type: Object,
                 default(){
@@ -70,7 +74,8 @@
                 if(this.autoClose){//mounted之后会定时的关闭自己
                     setTimeout(()=>{
                         this.close()
-                    },this.autoCloseDelay*1000)
+                    // },this.autoCloseDelay*1000)
+                    },this.autoClose*1000)
                 }
             },
             close(){//关闭自己

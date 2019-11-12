@@ -866,6 +866,151 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
         }
     }
 ```
+### toast的测试用例
+#### autoCloseDelay有点多余，删除掉
+* 因为有了autoClose就代表有延迟，还需要设置autoCloseDelay,那么我们只需要把autoClose当做autoCloseDelay即可。toast.vue组件代码删掉autoCloseDelay,autoClose可以输入布尔或者数字。
+```
+            autoClose:{//是否自动关闭
+                type:[Boolean,Number],
+                default:true,
+                validator(value){
+                    return value === false || typeof value === "number";
+                }
+            },
+            // autoCloseDelay:{//自动关闭的延迟时间
+            //     type:Number,
+            //     default: 5
+            // },
+```
+#### 在上面的修改代码的前提下再去测试
+* 新建一个toast.test.js
+* 存在的测试很简单
+```
+    it('存在Toast', () => {
+        expect(Toast).to.exist
+    })
+```
+* 测试接受autoClose和autoCloseDelay这个props参数
+```
+        it('接受autoClose和autoCloseDelay', (done) => {
+            let div=document.createElement('div')
+            document.body.appendChild(div)
+            const Constructor = Vue.extend(Toast)
+            const vm = new Constructor({
+                propsData: {
+                    autoClose: 1,
+                }
+            }).$mount(div)
+            setTimeout(()=>{//这里用vm.$nextTick()就不用设置延迟事件了
+                //这里我之前忘记在contains里面写vm.$el了。所以一直测试都是true
+                expect(document.body.contains(vm.$el)).is.equal(false)
+                done()
+            },1500)//这个时间比前面的autoCloseDelay事件要大就代表已经关闭不见了。
+        })
+```
+* 因为mocha默认最长只支持的延迟时间是2000ms，超过时间会报错，我们可以通过`this.timeout()`来设置最长延迟时间,比如不要用箭头函数，因为箭头函数的this需要外面传给它，它本身没有this。
+```
+    describe('props', function() {//这里只需要测试这个vm实例上面的元素不见了即可
+        //这里设置this.timeout15秒的时间，必须上面不能是箭头函数，箭头函数的this不能外面传进来
+        // this.timeout(15000)这里是毫秒
+        it('接受autoClose和autoCloseDelay', (done) => {
+
+        })
+    })
+```
+* 我们目前需要等待1.5秒才可以，那么我们来优化这个等待时间。
+    * 就是用[vm.$on](https://cn.vuejs.org/v2/api/#vm-on)监听这个beforeClose事件——**这个要用[vm.$emit](https://cn.vuejs.org/v2/api/#vm-emit)触发,因为我一直没有触发所以弄了很久都没有通过测试,我这里的取名跟老师的取名不同**，因为在toast.vue组件里面close事件里面会触发一个`this.$emit('beforeClose')`，也就是当关闭的时候会触发beforeClose事件。
+       ```
+                   close(){//关闭自己
+                       this.$el.remove()//把这个元素删除
+                       this.$emit('beforeClose')//触发一个关闭之前操作的事件，他就是把toast设置为undefined
+                       this.$destroy()//他会把绑定的事件取消掉
+                   },
+       ```
+    * 所以我们可以修改为绑定beforeClose即可，这样只要关闭就会触发beforeClose,那么就可以检测这个组件已经关闭了，那么就是false
+       ```
+               it('接受autoClose和autoCloseDelay', (done) => {
+                   let div=document.createElement('div')
+                   document.body.appendChild(div)
+                   const Constructor = Vue.extend(Toast)
+                   const vm = new Constructor({
+                       propsData: {
+                           autoClose: 1,
+                       }
+                   }).$mount(div)
+                   vm.$on('beforeClose',()=>{
+                           expect(document.body.contains(vm.$el)).is.equal(false);
+                           done()
+                   })
+               })
+       ```
+* 测试closeButton
+    * 这里老师的toast.vue组件里面的autoClose的default的默认值是true会报错，但是我这里并没有报错，而且我的测试代码不能打印toast.vue组件里面的validator验证器函数里面的console.log。暂时不知道为什么。通过吧default的true修改为数字5,只要是数字即可，这个5只是随便写的，
+    * 开始猜想是跟execAutoClose里面的this.autoClose有关。this.autoClose*1000不知道是什么,但是在app.js里面测试true*1000也是可以执行延迟时间的。
+    ```
+                autoClose:{//是否自动关闭
+                    type:[Boolean,Number],
+                    default:5,
+                    validator(value){
+                      console.log(value);
+                        return value === false || typeof value === 'number';
+                    }
+                },
+    ```
+    * 用异步的方式测试在app.js里面不报错，**用同步的方式在app.js里面会报错,报错信息Cannot read property 'style' of undefined，具体是updateStyles函数**
+    ```
+                updateStyles(){
+                    this.$nextTick(()=>{
+                        this.$refs.line.style.height=`${this.$refs.toast.getBoundingClientRect().height}px`
+                    })
+                },
+    ```
+    * 不用异步的方式的callback不是函数`callback(){}`的形式，而是一个变量`callback`的形式,**如果改成函数的形式会报错**
+    ```
+            it('接受closeButton,我自己用异步的方式，这个方法在app.js里面测试不报错', (done) => {
+                const callback=sinon.fake()
+                const Constructor = Vue.extend(Toast)
+                const vm = new Constructor({
+                    propsData: {
+                        closeButton: {
+                            text:'你好',
+                            callback(){},
+                        }
+                    }
+                }).$mount()
+    
+                let text=vm.$el.querySelector('.close').textContent.trim();
+                expect(text).is.equal('你好');
+                setTimeout(()=>{
+                vm.$el.querySelector('.close').click()
+                expect(callback).to.have.been.called
+                },1000)
+                done()
+            });
+            it('接受closeButton,这里老师写的，没有用异步', () => {
+                //此方法在app.js里面测试会报错 Cannot read property 'style' of undefined,也就是updateStyles函数报错，可能是因为获取不到这里的style吧
+                const callback=sinon.fake()
+                const Constructor = Vue.extend(Toast)
+                const vm = new Constructor({
+                    propsData: {
+                        closeButton: {
+                            text:'你好',
+                            callback,
+                        }
+                    }
+                }).$mount()
+    
+                    let text=vm.$el.querySelector('.close').textContent.trim();
+    
+                    expect(text).is.equal('你好');
+    
+                    vm.$el.querySelector('.close').click()
+                    expect(callback).to.have.been.called
+    
+    
+            })
+    ```
+
 
 
     
