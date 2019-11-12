@@ -890,9 +890,9 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
         expect(Toast).to.exist
     })
 ```
-* 测试接受autoClose和autoCloseDelay这个props参数
+* 测试接受autoClose这个props参数
 ```
-        it('接受autoClose和autoCloseDelay', (done) => {
+        it('接受autoClose', (done) => {
             let div=document.createElement('div')
             document.body.appendChild(div)
             const Constructor = Vue.extend(Toast)
@@ -913,7 +913,7 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
     describe('props', function() {//这里只需要测试这个vm实例上面的元素不见了即可
         //这里设置this.timeout15秒的时间，必须上面不能是箭头函数，箭头函数的this不能外面传进来
         // this.timeout(15000)这里是毫秒
-        it('接受autoClose和autoCloseDelay', (done) => {
+        it('接受autoClose', (done) => {
 
         })
     })
@@ -929,7 +929,7 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
        ```
     * 所以我们可以修改为绑定beforeClose即可，这样只要关闭就会触发beforeClose,那么就可以检测这个组件已经关闭了，那么就是false
        ```
-               it('接受autoClose和autoCloseDelay', (done) => {
+               it('接受autoClose', (done) => {
                    let div=document.createElement('div')
                    document.body.appendChild(div)
                    const Constructor = Vue.extend(Toast)
