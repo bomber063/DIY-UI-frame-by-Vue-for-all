@@ -918,7 +918,7 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
         })
     })
 ```
-* 我们目前需要等待1.5秒才可以，那么我们来优化这个等待时间。
+* 我们目前需要等待1.5秒才可以，那么我们来优化这个等待时间。同时这里也测试了close事件
     * 就是用[vm.$on](https://cn.vuejs.org/v2/api/#vm-on)监听这个beforeClose事件——**这个要用[vm.$emit](https://cn.vuejs.org/v2/api/#vm-emit)触发,因为我一直没有触发所以弄了很久都没有通过测试,我这里的取名跟老师的取名不同**，因为在toast.vue组件里面close事件里面会触发一个`this.$emit('beforeClose')`，也就是当关闭的时候会触发beforeClose事件。
        ```
                    close(){//关闭自己
@@ -929,7 +929,7 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
        ```
     * 所以我们可以修改为绑定beforeClose即可，这样只要关闭就会触发beforeClose,那么就可以检测这个组件已经关闭了，那么就是false
        ```
-               it('接受autoClose', (done) => {
+               it('接受autoClose,同时这里也测试了close事件', (done) => {
                    let div=document.createElement('div')
                    document.body.appendChild(div)
                    const Constructor = Vue.extend(Toast)
@@ -938,13 +938,14 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
                            autoClose: 1,
                        }
                    }).$mount(div)
-                   vm.$on('beforeClose',()=>{
+                   //下面这里也测试了close事件
+                   vm.$on('beforeClose',()=>{//因为在toast.vue组件里面close事件里面会触发一个`this.$emit('beforeClose')`，也就是当关闭的时候会触发beforeClose事件
                            expect(document.body.contains(vm.$el)).is.equal(false);
                            done()
                    })
                })
        ```
-* 测试closeButton
+* 测试closeButton,同时也测试了onClickClose事件和close事件
     * 这里老师的toast.vue组件里面的autoClose的default的默认值是true会报错，但是我这里并没有报错，而且我的测试代码不能打印toast.vue组件里面的validator验证器函数里面的console.log。暂时不知道为什么。通过吧default的true修改为数字5,只要是数字即可，这个5只是随便写的，
     * 开始猜想是跟execAutoClose里面的this.autoClose有关。this.autoClose*1000不知道是什么,但是在app.js里面测试true*1000也是可以执行延迟时间的。
     ```
@@ -967,7 +968,7 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
     ```
     * 不用异步的方式的callback不是函数`callback(){}`的形式，而是一个变量`callback`的形式,**如果改成函数的形式会报错**
     ```
-            it('接受closeButton,我自己用异步的方式，这个方法在app.js里面测试不报错', (done) => {
+        it('接受closeButton,我自己用异步的方式，同时也测试了onClickClose事件和close事件。这个方法在app.js里面测试不报错', (done) => {
                 const callback=sinon.fake()
                 const Constructor = Vue.extend(Toast)
                 const vm = new Constructor({
@@ -982,12 +983,13 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
                 let text=vm.$el.querySelector('.close').textContent.trim();
                 expect(text).is.equal('你好');
                 setTimeout(()=>{
+                //    下面的点击之后就会触发toast.vue中的onClickClose事件和close事件
                 vm.$el.querySelector('.close').click()
                 expect(callback).to.have.been.called
                 },1000)
                 done()
             });
-            it('接受closeButton,这里老师写的，没有用异步', () => {
+        it('接受closeButton,这里老师写的，没有用异步,同时也测试了onClickClose事件和close事件', () => {
                 //此方法在app.js里面测试会报错 Cannot read property 'style' of undefined,也就是updateStyles函数报错，可能是因为获取不到这里的style吧
                 const callback=sinon.fake()
                 const Constructor = Vue.extend(Toast)
@@ -999,15 +1001,73 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
                         }
                     }
                 }).$mount()
-    
                     let text=vm.$el.querySelector('.close').textContent.trim();
-    
                     expect(text).is.equal('你好');
-    
+                //    下面的点击之后就会触发toast.vue中的onClickClose事件和close事件
                     vm.$el.querySelector('.close').click()
                     expect(callback).to.have.been.called
     
     
+            })
+    ```
+* 测试enableHtml
+    * 接受enableHtml,我自己用的找字符串办法
+    ```
+            it('接受enableHtml,我自己用的找字符串办法', () => {
+                //这里不需要原生代码把组件放到body上面，因为没有用到style
+                // let div=document.createElement('div')
+                // document.body.appendChild(div)
+                const Constructor = Vue.extend(Toast)
+                const vm = new Constructor({
+                    propsData: {
+                        enableHtml: false
+                    }
+                })
+                vm.$slots.default='<h1>你好</h1>'
+                vm.$mount()
+                let message=vm.$el.querySelector('.message').textContent.trim()
+                //下面的也可以是想，只是上面的textContent会把空格也包括了，所以需要trim去掉空格
+                // let message=vm.$el.querySelector('.message').innerText
+                expect(message).is.equal('<h1>你好</h1>')
+                    //如果是true就是你好,没有标签
+                // expect(message).is.equal('你好')
+    
+            })
+    ```
+    * 接受enableHtml,这是老师用的找标签方法
+    ```
+            it('接受enableHtml,这是老师用的找标签方法', () => {
+                //这里不需要原生代码把组件放到body上面，因为没有用到style
+                // let div=document.createElement('div')
+                // document.body.appendChild(div)
+                const Constructor = Vue.extend(Toast)
+                const vm = new Constructor({
+                    propsData: {
+                        enableHtml: true
+                    }
+                })
+                vm.$slots.default='<strong id="test">hi</strong>'
+                vm.$mount()
+                let strong=vm.$el.querySelector('#test')
+                expect(strong).to.exist
+            })
+    ```
+* 测试接受position
+* 这里我用到的**[Element.querySelector()](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/querySelector),它是找后代元素的信息，不能找自己的信息，我又搞错了一次。**
+    * 正确的应该是用[classList.contains()](https://developer.mozilla.org/zh-CN/docs/Web/API/DOMTokenList/contains)
+    ```
+            it('接受position', () => {
+                //这里不需要原生代码把组件放到body上面，因为没有用到style
+                // let div=document.createElement('div')
+                // document.body.appendChild(div)
+                const Constructor = Vue.extend(Toast)
+                const vm = new Constructor({
+                    propsData: {
+                        position: 'top'
+                    }
+                }).$mount()
+                let position=vm.$el.classList.contains('position-top')
+                expect(position).is.equal(true)
             })
     ```
 
