@@ -1053,7 +1053,7 @@ function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构
             })
     ```
 * 测试接受position
-* 这里我用到的**[Element.querySelector()](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/querySelector),它是找后代元素的信息，不能找自己的信息，我又搞错了一次。**
+    * 这里**我用到的[Element.querySelector()](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/querySelector),它是找后代元素的信息，不能找自己的信息，我又搞错了一次**。
     * 正确的应该是用[classList.contains()](https://developer.mozilla.org/zh-CN/docs/Web/API/DOMTokenList/contains)
     ```
             it('接受position', () => {
