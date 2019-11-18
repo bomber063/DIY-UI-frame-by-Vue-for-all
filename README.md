@@ -23,5 +23,84 @@ We found a potential security vulnerability in one of your dependencies
     * 新开一个 Git Bash 窗口运行 npx parcel watch test/* --no-cache
     * 再开一个 Git Bash 窗口运行 npx karma start
 #### vue有什么好的文章推荐
+#### 这里我发现我的分支名字错了用下面命令修改分支名字
+```
+git branch -m old_branch new_branch # Rename branch locally 
+git push origin :old_branch # Delete the old branch 
+git push --set-upstream origin new_branch # Push the new branch, set local branch to track the new remote
+```
+* **注：红色为标注！不需要键入！**
+* 具体见[文章——git-更改本地和远程分支的名称](https://www.cnblogs.com/wangzhichao/p/git.html)
 * 看Vue官网就好了
-### 在
+### 解决前面的toast组件的一个bug
+* 其实在前[面我自己已经发现并解决了](https://github.com/bomber063/DIY-UI-frame-by-Vue-for-all/tree/toast)，这里在说一下吧
+* 报错error是`Cannot read property 'style' of undefined`,具体是在toast组件里面method的updateStyles函数
+```
+        updateStyles(){
+            this.$nextTick(()=>{
+                this.$refs.line.style.height=`${this.$refs.toast.getBoundingClientRect().height}px`
+            })
+        },
+```
+* 也就是`this.$refs.line.style`这里的style前面的对象是undefined。
+* 这里老师主要讲了**是二分法来找到这个bug的地方，因为是测试的时候出错，所以报错代码肯定是在测试代码里面，那么就值显示一条测试代码通过二分法找。我是直接通过app.js里面写测试在浏览器上面看到红色报错信息的**，都可以
+* 通过在mounted里面打出`console.log(this.$el.outHTML)`发现是有line的,但是在`$nextTick`之后打出来`console.log(this.$refs)`发现已经没有line了，所以说明在这两者之间就导致line不见了，或者被关闭了.然后再测试代码里面可以看到mount之后马上click关闭了,问题就在这里。
+```
+            const vm = new Constructor({
+                propsData: {
+                    closeButton: {
+                        text:'你好',
+                        callback
+                    }
+                }
+            }).$mount()
+                let text=vm.$el.querySelector('.close').textContent.trim();
+                expect(text).is.equal('你好');
+            //    下面的点击之后就会触发toast.vue中的onClickClose事件和close事件
+                vm.$el.querySelector('.close').click()
+```
+* 这里的原因就是**nextTick之前就已经把整个组件关闭掉了或者把这个line关闭掉了**，所以不可以马上用click事件点击，在click这里需要延迟一会再去点击，所以把这里增加一个延迟函数setTimeout即可解决了
+```
+        it('接受closeButton,这里老师写的，没有用异步,同时也测试了onClickClose事件和close事件', () => {
+            //此方法在app.js里面测试会报错 Cannot read property 'style' of undefined,也就是updateStyles函数报错，可能是因为获取不到这里的style吧
+            const callback=sinon.fake()
+            const Constructor = Vue.extend(Toast)
+            const vm = new Constructor({
+                propsData: {
+                    closeButton: {
+                        text:'你好',
+                        callback
+                    }
+                }
+            }).$mount()
+                let text=vm.$el.querySelector('.close').textContent.trim();
+                expect(text).is.equal('你好');
+            //    下面的点击之后就会触发toast.vue中的onClickClose事件和close事件
+                vm.$el.querySelector('.close').click()
+                expect(callback).to.have.been.called
+        })
+```
+* 修改为
+```
+        it('接受closeButton,我自己用异步的方式，同时也测试了onClickClose事件和close事件。这个方法在app.js里面测试不报错', (done) => {
+            const callback=sinon.fake()
+            const Constructor = Vue.extend(Toast)
+            const vm = new Constructor({
+                propsData: {
+                    closeButton: {
+                        text:'你好',
+                        callback(){},
+                    }
+                }
+            }).$mount()
+            let text=vm.$el.querySelector('.close').textContent.trim();
+            // setInterval(()=>{//因为在toast里面的updateStyles方法是延迟的，所以这里也必须要延迟，不然会报错
+            expect(text).is.equal('你好');
+            setTimeout(()=>{
+            //    下面的点击之后就会触发toast.vue中的onClickClose事件和close事件
+            vm.$el.querySelector('.close').click()
+            expect(callback).to.have.been.called
+            },0)
+            done()
+        });
+```
