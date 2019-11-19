@@ -104,3 +104,87 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
             done()
         });
 ```
+### 需求分析
+* 每次写轮子之前考虑四个问题
+    1. 需求分析
+    2. UI
+    3. 代码
+    4. 测试
+* 少了某一项可能都会导致问题。
+* 效果大概就是有一行是一些标题，比如美女，财经，新闻，体育等，点击某一行标题后会显示响应的标题内容。
+* 用例的功能可以参考（抄）业界的其他框架的UI和功能，因为软件工程里面最好是把轮子做的和业界大概相似，不要相差太远，**这是为了减少用户的学习成本**，比如可以借鉴[ant.design的tabs](https://ant.design/components/tabs-cn/)及[framework7](https://framework7.io/)
+    * ant.design的tabs
+    1. 可以切换tab
+    2. 可以禁用某个按钮(这个功能可以直接隐藏，当然也可以设置禁用)
+    3. 在tab上面增加一个icon
+    4. 横竖切换方向（CSS的问题）
+    5. 增加一个额外的按钮（可以在页签右边添加附加操作）
+    * 下面的就暂时不做
+    6. 调节字体大小
+    7. 调节tab的位置
+    8. 添加和删除tab
+    9. 等等
+    * framework7里面基本都是在手机端的，都是在最下面显示。
+    1. Static Tabs
+    2. Animated Tabs
+    3. Swipeable Tabs(可以用鼠标拖动)
+    4. Routable Tabs（路由模式）
+* UI就可以用ant.design的，就是点击后按钮下面会有一个蓝色或者其他颜色的横条，然后tab也是这种颜色。然后切换的时候跟着一起动
+#### 其他人如何使用这个组件
+* element的写法是
+```
+    <g-tabs>
+        <g-tabs-item laber="美女">
+            <div>美女相关资讯</div>
+        </g-tabs-item>
+        <g-tabs-item laber="世界杯">
+            <div>世界杯相关资讯</div>
+        </g-tabs-item>
+    </g-tabs>
+```
+* 增加一个icon的写法
+```
+    <g-tabs>
+        <g-tabs-item>
+            <template>
+                <g-icon>
+                </g-icon>
+                美女
+            </template>
+            <div>美女相关资讯</div>
+        </g-tabs-item>
+        <g-tabs-item laber="世界杯">
+            <div>世界杯相关资讯</div>
+        </g-tabs-item>
+    </g-tabs>
+```
+* **但是如果想在tab上面增加一个背景颜色就不好实现了**。因为没有地方可以增加了。因为tab-item既包括上面的标题也包括下面的内容。
+* 更形象的一点就看下面
+    * g-tabs下面结构
+    1. g-tabs——g-tabs-item
+    2. g-tabs——g-tabs-item
+    3. ......
+#### 我们要做的的结构
+* g-tabs下面结构,这样nav就和content分开了，就可以单独给nav设置颜色
+1. g-tabs——nav
+    1. g-tabs——nav-item-1
+    2. g-tabs——nav-item-2
+2. g-tabs——content
+    1. g-tabs——content-pane-1
+    2. g-tabs——content-pane-2
+* 这样如果我想在nav上面增加一个背景色，只需要在nav上面写一个class然后用 style实现red就好了
+* 虽然这样**结构更加清晰，但是代码相对复杂**,同时需要在使用item的时候给一个name,默认选中（激活）哪一个需要在tabs上面用selected表示
+* 总体结构如下：
+```
+<!--//tab1被激活-->
+<g-tabs selected="tab1">
+    <g-tabs-nav>
+        <g-tabs-item name="tab1"></g-tabs-item>
+        <g-tabs-item name="tab2"></g-tabs-item>
+    </g-tabs-nav>
+    <g-tabs-content>
+        <g-tabs-pane name="tab2"></g-tabs-pane>
+        <g-tabs-pane name="tab1"></g-tabs-pane>
+    </g-tabs-content>
+</g-tabs>
+```
