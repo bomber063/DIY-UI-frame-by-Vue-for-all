@@ -12,6 +12,12 @@ import  Header from './header'
 import Layout from './layout'
 import Toast from './toast'
 import plugin from './plugin.js'
+import Tabs from './tabs'
+import TabsHead from './tabs-head'
+import TabsItem from './tabs-item'
+import TabsBody from './tabs-body'
+import TabsPane from './tabs-pane'
+
 
 Vue.component('g-button', Button)
 Vue.component('g-icon', Icon)
@@ -26,16 +32,19 @@ Vue.component('g-sider', Sider)
 Vue.component('g-content', Content)
 Vue.component('g-toast', Toast)
 Vue.use(plugin)//这个use会去执行plugin里面的install方法,并且这个是用户主动写的
+Vue.component('g-tabs', Tabs)
+Vue.component('g-tabs-item', TabsItem)
+Vue.component('g-tabs-body', TabsBody)
+Vue.component('g-tabs-pane', TabsPane)
+Vue.component('g-tabs-head', TabsHead)
+
 
 
 // console.log(Button.props.loading)
 new Vue({
     el: '#app',
     data: {
-        loading1: false,
-        loading2: true,
-        loading3: false,
-        message:'hi'
+        selectedTab:'sports'
     },
     created(){
         // setTimeout(()=>{

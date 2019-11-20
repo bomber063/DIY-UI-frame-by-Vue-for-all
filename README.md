@@ -188,3 +188,69 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
     </g-tabs-content>
 </g-tabs>
 ```
+### 开始新建tabs组件写代码
+* 首先**要知道子组件是不能修改父组件的任何值的**,可以通过父组件(比如class为app)来修改，这里的selectedTab是class为app的数据
+#### vue的sync语法糖
+* 这里用到的vue的[sync](https://cn.vuejs.org/v2/guide/components-custom-events.html#sync-%E4%BF%AE%E9%A5%B0%E7%AC%A6),就是下面的带sync的是vue提供的语法糖，两者是等价的，注意绑定的事件是`update:selected`,它中间是有一个**冒号**
+```
+<!--    <g-tabs :selected="selectedTab" @update:selected="selectedTab=$event">-->
+上面的原版写法，下面的是语法糖，上下两者等价
+    <g-tabs :selected.sync="selectedTab">
+```
+* 因为前面绑定了updated:selected,那么需要通过vm.$emit()触发才可以实现
+```
+        created(){
+                // this.$emit('update:selected','xxx')
+        }
+```
+#### vm.$on和vm.$emit一起使用
+* [vm.$on](https://cn.vuejs.org/v2/api/#vm-on)( event, callback )是和[[vm.$emit]((https://cn.vuejs.org/v2/api/#vm-emit))[eventName, […args]],后面(vm.$emit)的args就是前面传递给前面(vm.$on)里面的callback，vm.$on通过$event可以拿到这个args
+* tabs里面的数据有direction方向。各个子组件里面有disabled,就是被禁用的
+#### 具名slot插槽
+* 在tab-header组件里面都是一样的
+```
+<template>
+    <div class="tabs-head">
+<!--        如果这里不用slot插槽，会被Vue自动删除-->
+        <slot></slot>
+<!--        所有的tabs-item的会出现在上面,其他的插槽会出现在下面-->
+            <slot name=actions></slot>
+    </div>
+</template>
+```
+* 在父组件上有两种写法传入给子组件这个具名插槽的信息，
+    * 老师用的是Vue[废弃的写法slot特性的具名插槽](https://cn.vuejs.org/v2/guide/components-slots.html#%E5%BA%9F%E5%BC%83%E4%BA%86%E7%9A%84%E8%AF%AD%E6%B3%95),使用**slot加等于号**
+    ```
+            <g-tabs-head>
+                <template slot=actions>
+                    <button>设置</button>
+                </template>
+                <g-tabs-item name="woman">
+                    <g-icon name="setting"></g-icon>美女
+                </g-tabs-item>
+                <g-tabs-item name="finance" disabled>
+                    财经
+                </g-tabs-item>
+                <g-tabs-item name="sports">
+                    体育
+                </g-tabs-item>
+            </g-tabs-head>
+    ```
+    * 还有最新的[具名插槽写法](https://cn.vuejs.org/v2/guide/components-slots.html#%E5%85%B7%E5%90%8D%E6%8F%92%E6%A7%BD)是用**v-slot加冒号**
+    ```
+                <g-tabs-head>
+                    <template v-slot:actions>
+                        <button>设置</button>
+                    </template>
+                    <g-tabs-item name="woman">
+                        <g-icon name="setting"></g-icon>美女
+                    </g-tabs-item>
+                    <g-tabs-item name="finance" disabled>
+                        财经
+                    </g-tabs-item>
+                    <g-tabs-item name="sports">
+                        体育
+                    </g-tabs-item>
+                </g-tabs-head>
+    ```
+

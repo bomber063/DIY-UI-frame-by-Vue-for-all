@@ -32,10 +32,35 @@
 </head>
 <body>
 <div id="app">
-    <button @click="showToastTop">top</button>
-    <button @click="showToastMiddle">middle</button>
-    <button @click="showToastBottom">bottom</button>
-<!--    <button @click="showToast">点我</button>-->
+<!--    <g-tabs :selected="selectedTab" @update:selected="selectedTab=$event">-->
+    <g-tabs :selected.sync="selectedTab">
+        <g-tabs-head>
+<!--            <template v-slot:actions>-->
+            <template slot=actions>
+                <button>设置</button>
+            </template>
+            <g-tabs-item name="woman">
+                <g-icon name="setting"></g-icon>美女
+            </g-tabs-item>
+            <g-tabs-item name="finance" disabled>
+                财经
+            </g-tabs-item>
+            <g-tabs-item name="sports">
+                体育
+            </g-tabs-item>
+        </g-tabs-head>
+        <g-body>
+            <g-tabs-pane name="woman">
+                美女相关资讯
+            </g-tabs-pane>
+            <g-tabs-pane name="finance">
+                财经相关资讯
+            </g-tabs-pane>
+            <g-tabs-pane name="sports">
+                体育相关资讯
+            </g-tabs-pane>
+        </g-body>
+    </g-tabs>
 </div>
 <script src="./src/app.js"></script>
 </body>
