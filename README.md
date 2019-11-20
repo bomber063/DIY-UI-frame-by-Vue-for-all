@@ -44,6 +44,7 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
 ```
 * 也就是`this.$refs.line.style`这里的style前面的对象是undefined。
 * 这里老师主要讲了**是二分法来找到这个bug的地方，因为是测试的时候出错，所以报错代码肯定是在测试代码里面，那么就值显示一条测试代码通过二分法找。我是直接通过app.js里面写测试在浏览器上面看到红色报错信息的**，都可以
+* ![饥人谷二分法的图片](https://static.xiedaimala.com/xdml/image/3ac7c224-c23d-491f-84b5-4fabfbeab9b8/2018-7-30-18-52-49.png)
 * 通过在mounted里面打出`console.log(this.$el.outHTML)`发现是有line的,但是在`$nextTick`之后打出来`console.log(this.$refs)`发现已经没有line了，所以说明在这两者之间就导致line不见了，或者被关闭了.然后再测试代码里面可以看到mount之后马上click关闭了,问题就在这里。
 ```
             const vm = new Constructor({
@@ -236,7 +237,7 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
                 </g-tabs-item>
             </g-tabs-head>
     ```
-    * 还有最新的[具名插槽写法](https://cn.vuejs.org/v2/guide/components-slots.html#%E5%85%B7%E5%90%8D%E6%8F%92%E6%A7%BD)是用**v-slot加冒号**
+    * 还有[最新的具名插槽写法](https://cn.vuejs.org/v2/guide/components-slots.html#%E5%85%B7%E5%90%8D%E6%8F%92%E6%A7%BD)是用**v-slot加冒号**
     ```
                 <g-tabs-head>
                     <template v-slot:actions>
@@ -253,4 +254,135 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
                     </g-tabs-item>
                 </g-tabs-head>
     ```
+#### head和body分开就可以单独写class了,不会覆盖
+* 在标签上面写一个class，然后这个组件也有class，那么他们两个class是不会互相覆盖，而是会一起出现的。[Vue的原话是当在一个自定义组件上使用 class 属性时，这些 class 将被添加到该组件的根元素上面。这个元素上已经存在的 class 不会被覆盖。](https://cn.vuejs.org/v2/guide/class-and-style.html#%E7%94%A8%E5%9C%A8%E7%BB%84%E4%BB%B6%E4%B8%8A)
+* 比如在tabs-head组件里面有`class="tabs-head"`
+```
+    <div class="tabs-head">
+<!--        如果这里不用slot插槽，会被Vue自动删除-->
+        <slot></slot>
+<!--        所有的tabs-item的会出现在上面,其他的插槽会出现在下面-->
+            <slot name=actions></slot>
+    </div>
+```
+* 然后g-tabs-head标签上有`class="bomber"`,那么最后结果是既有bomber也有tabs-head的class。
+```
+        <g-tabs-head class="bomber">
 
+        </g-tabs-head>
+```
+
+* **并且只有两个属性是不会被覆盖的，一个是class，另一个就是style**，其他属性就会被覆盖。
+### 依赖注入和eventBus
+#### 普通的传值过程
+* 一般爷爷组件传给各个父组件，然后父组件传给各个子组件是很好传值的。
+* 两个兄弟关系的组件是没有办法通信的。这样就当item自己被点亮后，还需要通知兄弟组件的item关掉就很难办到。
+* 亮了item后还需要通知body里面对应的pane，比如item里面的体育对应body里面的pane的体育相关资讯
+* 还需要熄灭body里面之前已经亮起的pane。
+* 最后还需要通知用户对应的时间update:selected里面的事件改变成了对应的item
+* 完整的逻辑
+    1. 亮item自己
+    2. 熄灭之前item的兄弟
+    3. 亮对应body里面的对应的pane
+    4. 熄灭之前body里面对应的pane的兄弟
+    5. 改变update:selected里面对应的事件
+* 详细可以查看![饥人谷的图片](https://static.xiedaimala.com/xdml/image/3ac7c224-c23d-491f-84b5-4fabfbeab9b8/2018-7-30-18-56-56.png)
+* 如果走单线去通知，就既需要通知父还需要通知爷，还需要通知各种兄弟，上下已经左边旁边关系很复杂。
+#### 通过第三者——事件中心eventBus来传值
+* 有的地方叫做eventHub，有的叫做eventBus。
+* item出现了变化就直接通知事件中心，然后由于事件中心通知给各个需要通知的组件（其他所有组件及节点）。
+* 很类似于一个发布订阅模式，就是谁订阅了就发布给谁。这比之前的单线通知错综复杂的关系要简单很多。因为这里只需要发布事件，然后其他所有组件订阅这个事件就好而来，对于代码来说简单很多。
+* 这里需要用到[vue里面的事件中心](https://cn.vuejs.org/v2/guide/migration.html#dispatch-%E5%92%8C-broadcast-%E6%9B%BF%E6%8D%A2)和[依赖注入](https://cn.vuejs.org/v2/guide/components-edge-cases.html#%E4%BE%9D%E8%B5%96%E6%B3%A8%E5%85%A5),依赖注入用到两个Vue的API——[provide / inject](https://cn.vuejs.org/v2/api/#provide-inject)
+* 如果不把provide放到data里面，只能除了自己的组件以外的其他组件通过inject访问，**但是如果把它放到data里面,那么自己也可以访问到这provide返回的值。**
+```
+        data(){
+            return {
+                eventBus:new Vue()
+            }
+        },
+        //provide选项应该是一个对象或返回一个对象的函数
+        provide(){
+            return{
+                eventBus:this.eventBus
+            }
+        },
+```
+* 另外这里注意通过控制台查this会看到一些下划线开头的属性，这些属性不要随便用，因为是私有属性，是给Vue作者使用的。**他是$对应的属性的引用**，$开头及没有前缀的才是给用户使用的。
+* 一旦爷爷组件用到的provide,那么provide的返回的对象里面的key通过别的地方(**任何后代**)使用inject插入，就可以使用了。
+* 因为有是三个孙子item，**所以会打出三个同一个eventBus的引用**
+* 我们在body,head,pane,item里面都写上代码，就可以访问到了,这里只举例body的
+```
+        inject:['eventBus'],
+        created() {
+            console.log('传给body的eventBus')
+            console.log(this.eventBus)
+        }
+```
+* 这样我们点击的时候就可以通知所有人了。比如在item这里增加一个click点击事件,然后在item里面emit触发`update:selected`事件,emit触发需要绑定事件，就用到[on](https://cn.vuejs.org/v2/api/#vm-on)
+```
+        <template>
+            <div class="tabs-item" @click="xxx">
+        <!--        如果这里不用slot插槽，会被Vue自动删除-->
+                <slot></slot>
+            </div>
+        </template>
+
+
+        created() {
+            this.eventBus.$on('update:selected',(xxxname)=>{
+                console.log(xxxname)
+            })
+        },
+        methods:{
+            xxx(){
+                this.eventBus.$emit('update:selected',this.name)
+            //    这里emit触发了update:selected事件，并且把this.name传给了上面的$on绑定的事件，
+            }
+        }
+```
+* 我们需要在tab-pane组件上面同样监听这个`update:selected`事件，因为这个组件上面也有name的值，这个是是标签上面的name
+#### 组件事件不会从子组件冒泡到父组件，并且注意this.$emit和this.eventBus.$event的区别
+* **需要注意**，如果在父组件g-tabs上面绑定事件`update:selected`，如果子组件item触发这个事件，那么**不会执行父组件g-tabs上面的这个绑定事件`update:selected`，因为Vue组件是像原生JS那样冒泡的**
+    * 如果在父组件g-tabs上面绑定事件`update:selected`，这个地方监听的对象也有不同。因为子组件item里面监听的是前面g-tabs组件创建的一个`new Vue()`对象。
+    ```
+            data(){
+                return {
+                    eventBus:new Vue()
+                }
+            },
+    ```
+    * 而如果在父组件的标签上面写上`@update:selected="xxx"`,比如下面，那么**它监听的是g-tabs这个Vue组件对象的事件**
+    ```
+        <g-tabs :selected.sync="selectedTab" @update:selected="yyy"></g-tabs>
+    ```
+    * 这两个对象(new Vue()对象和g-tabs组件对象)是不同的对象。
+    * 在app.js里面增加一个事件,这里的aaa就是emit传入的参数
+    ```
+        methods:{
+            yyy(aaa){
+              console.log(aaa)
+            },
+    ```
+    * 那么g-tabs组件上面的触发是不用通过eventBus，因为在组件里面this就是g-tabs组件，下面的代码就会触发yyy函数，然后打印出`我是this.$emit触发的事件出来的数据`,而`我是this.eventBus.$emit触发的事件出来的数据`是不会打印，因为并没有触发。
+    ```
+        created(){
+                this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
+                this.eventBus.$emit('update:selected','我是this.eventBus.$emit触发的事件出来的数据')
+        }
+    ```
+    * 同理如果在g-head，也就是g-tabs的直接子组件上面的`this.$emit`触发`update:selected`,也是不会**冒泡**到父组件g-tabs上面去触发`update:selected`这个事件的。
+    * 当然你可以使用[$root](https://cn.vuejs.org/v2/api/#vm-root)来主动使他冒泡，但是并不推荐这样去做。
+* 最后总结就是要注意：
+    1. 事件是在**哪个对象上面触发调用的**，在哪个对象上面触发调用就是只能在那个对象上面监听事件。
+    2. 在Vue中事件不会冒泡，在子标签上面触发的事件不会自动传到父标签上面触发
+
+#### 小问题关于管道符号
+* 老师视频里面有一个错误把竖直线当成或了,写成了`String|Number`，此处是一个手误（方方老师说把 TypeScript 语法乱入进来了），正确写法是 `[String, Number]`,而在Vue文档里面用到很多**管道符竖直线**，但是大部分都是类型里面用到的。Vue中真正的管道符是[过滤器](https://cn.vuejs.org/v2/guide/filters.html),新旺老师在答疑群里面说道**类型 一般默认 一条线**
+* 经过测试，发现写成下面两种方式(数组形式及竖线管道形式)都不会报错
+```
+          name:{
+              type:[String,Number],
+              // type:String|Number,
+              required:true
+          }
+```

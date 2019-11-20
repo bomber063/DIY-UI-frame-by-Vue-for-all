@@ -5,6 +5,7 @@
     </div>
 </template>
 <script>
+    import Vue from 'vue'
     export default {
         name:'GuluTabs',
         props:{
@@ -21,8 +22,25 @@
 
             }
         },
+        data(){
+            return {
+                eventBus:new Vue()
+            }
+        },
+        //provide选项应该是一个对象或返回一个对象的函数
+        provide(){
+            return{
+                eventBus:this.eventBus
+            }
+        },
         created(){
+            // console.log('eventBus')
+            // console.log(this.eventBus)
+            // console.log('this')
+            // console.log(this)
                 // this.$emit('update:selected','xxx')
+                // this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
+                // this.eventBus.$emit('update:selected','我是this.eventBus.$emit触发的事件出来的数据')
         }
     }
 </script>

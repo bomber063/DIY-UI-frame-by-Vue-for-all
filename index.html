@@ -33,7 +33,7 @@
 <body>
 <div id="app">
 <!--    <g-tabs :selected="selectedTab" @update:selected="selectedTab=$event">-->
-    <g-tabs :selected.sync="selectedTab">
+    <g-tabs :selected.sync="selectedTab" @update:selected="yyy">
         <g-tabs-head>
 <!--            <template v-slot:actions>-->
             <template slot=actions>
@@ -49,7 +49,7 @@
                 体育
             </g-tabs-item>
         </g-tabs-head>
-        <g-body>
+        <g-tabs-body>
             <g-tabs-pane name="woman">
                 美女相关资讯
             </g-tabs-pane>
@@ -59,7 +59,7 @@
             <g-tabs-pane name="sports">
                 体育相关资讯
             </g-tabs-pane>
-        </g-body>
+        </g-tabs-body>
     </g-tabs>
 </div>
 <script src="./src/app.js"></script>

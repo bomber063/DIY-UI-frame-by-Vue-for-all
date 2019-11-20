@@ -8,7 +8,14 @@
 </template>
 <script>
     export default {
-        name:'GuluTabsHead'
+        name:'GuluTabsHead',
+        inject:['eventBus'],
+        created(){
+            // console.log('爷爷给爸爸的eventBus')
+            // console.log(this.eventBus)
+            this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
+
+        }
     }
 </script>
 <style>

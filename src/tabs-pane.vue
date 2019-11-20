@@ -6,11 +6,27 @@
 </template>
 <script>
     export default {
-        name:'GuluTabsBody'
+        name:'GuluTabsPane',
+        inject:['eventBus'],
+        // data(){
+        //     return {
+        //         name:{type:[String,Number],
+        //         required:true}
+        //     }
+        // },
+        created() {
+            // console.log('传给pane的eventBus')
+            // console.log(this.eventBus)
+            this.eventBus.$on('update:selected',(xxxname)=>{
+                // this.name=xxxname
+                console.log('我是pane'+xxxname)
+                console.log('我是pane'+this.name)
+            })
+        },
     }
 </script>
 <style>
-    .tabs-body{
+    .tabs-pane{
 
     }
 </style>

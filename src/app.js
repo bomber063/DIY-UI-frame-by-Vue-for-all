@@ -66,6 +66,9 @@ new Vue({
 
     },
     methods:{
+        yyy(aaa){
+          console.log(aaa)
+        },
         showToastTop() {
             this.showToast('top')
         },
