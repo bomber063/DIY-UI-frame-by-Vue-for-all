@@ -562,3 +562,21 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
 ```
 #### 好的框架的说明
 * 目前vue能够提供这种提高代码平均质量的不够多，它只能算作变成框架的途中。真正的算作框架的应该是[angular](https://angular.io/)，因为**它强制要求你[测试](https://angular.io/guide/testing)，不测试就不让你发布。并且该怎么写代码都给了你非常主观的推荐,它对测试用了非常大的说明来给你介绍，基本上告诉你每一行代码应该怎么写**
+### 优化样式
+#### 增大item的可点击区域
+* **可交互区域比较小**,文字上面和下面点击不到，必须要点击到中间的位置才可以实现click事件交互。因为里面的内容的高度要小于父元素的高度，所以小于的部分就点击不到了，那么就把里面的元素设置告诉为100%,增加display和align-items居中。
+```
+<style scoped lang="scss">
+    .tabs-item{
+        flex-shrink:0;
+        padding:0 1em;
+        cursor: pointer;
+        height:100%;
+        border:1px solid blue;
+        display: flex;
+        align-items: center;
+        &.active{
+            background: red;
+        }
+    }
+```

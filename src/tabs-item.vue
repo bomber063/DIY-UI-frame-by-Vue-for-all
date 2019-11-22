@@ -61,6 +61,12 @@
         /*如果写成0，就是少了是不能压缩宽度的*/
         flex-shrink:0;
         padding:0 1em;
+        cursor: pointer;
+        height:100%;
+        border:1px solid blue;
+        display: flex;
+        align-items: center;
+        /*padding:10px 0px;*/
         &.active{
             background: red;
         }
