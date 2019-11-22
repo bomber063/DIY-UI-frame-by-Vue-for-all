@@ -512,3 +512,53 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
 </script>
 ```
 * 加更多的初始化代码，可以在设置->File and Code template(文件和代码模板)里面增加
+#### 小结
+* 首先分析了需求并做了个5个tab用到的组件
+    * tabs.vue组件里面
+        1. props里面的selected——可以双向同步。
+        2. props里面的direction——可以用来切换方向。
+        3. 创建一个new Vue()，把它作为事件中心eventBus来provide给其他组件。
+        3. emit(触发)一个update:selected事件，并传参数this.selected
+    * tabs-head里面没有参数，只有一inject然后触发emit做测试用。目前主要用来做HTML结构的组件。
+    * tabs-item里面
+        1. props里面的disabled——禁用
+        2. props里面的name，是必须要组件标签传值过来的，这里是必须写的。
+        3. 它有一个计算值active
+        4. 内部绑定了一个click事件
+        5. data里面是否被激活active
+    * pane和item激活一样
+    * body和head几乎一样
+* 然后这些组件都在created里面绑定了`update:selected`事件
+```
+this.eventBus.$on('update:selected',()=>{}
+```
+#### 不能随便修改props里面的属性的值
+* 不能随便修改props里面的属性的值，不然会报错,比如我主动修改props里面的name
+```
+        created() {
+            this.eventBus.$on('update:selected',(xxxname)=>{
+                // 下面的代码可以用webStorm优化，但是我这里为了自己以后看明白就不优化了
+                if(this.name===xxxname){
+                    this.active=true
+                }
+                else{
+                    this.active=false
+                    //下面的代码我主动把传过来的参数xxxname赋值给当前的name，就会报错
+                    this.name=xxxname
+                }
+            })
+        },
+```
+报错如下，大概的意思就是避免直接改变属性
+```
+Avoid mutating a prop directly since the value will be overwritten whenever the parent component re-renders. Instead, use a data or computed property based on the prop's value. Prop being mutated: "name"
+```
+* 相当于写一个函数,把接受的参数修改为别的值，原生的代码虽然没有大问题，但是我们坚持原则就是不要改，所以在Vue里面是默认不能修改，一旦修改了会直接报错。所以框架是提供给团队使用，计算水平很烂的程序员也不会也出比较不好维护的代码，因为一旦你写了不好的代码就直接报错，你就没有办法继续写代码了。要把报错修复才可以继续写代码。这样就可以保证代码的平均质量。
+```
+ function(obj){
+    obj.a//修改这个对象里面的key为a对应的值
+    return obj
+ }
+```
+#### 好的框架的说明
+* 目前vue能够提供这种提高代码平均质量的不够多，它只能算作变成框架的途中。真正的算作框架的应该是[angular](https://angular.io/)，因为**它强制要求你[测试](https://angular.io/guide/testing)，不测试就不让你发布。并且该怎么写代码都给了你非常主观的推荐,它对测试用了非常大的说明来给你介绍，基本上告诉你每一行代码应该怎么写**
