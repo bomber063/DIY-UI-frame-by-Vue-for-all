@@ -48,13 +48,14 @@
         },
         methods:{
             xxx(){
-                this.eventBus.$emit('update:selected',this.name)
+                this.eventBus.$emit('update:selected',this.name,this)
             //    这里emit触发了update:selected事件，并且把this.name传给了上面的$on绑定的事件，
             }
         }
     }
 </script>
 <style scoped lang="scss">
+    $blue:blue;
     .tabs-item{
         /*flex-grow:1;*/
         /*下面默认是1，如果长度超过本身宽度就让他换行，不然会超出显示器到外面去*/
@@ -63,12 +64,14 @@
         padding:0 1em;
         cursor: pointer;
         height:100%;
-        border:1px solid blue;
+        /*border:1px solid blue;*/
         display: flex;
         align-items: center;
         /*padding:10px 0px;*/
         &.active{
-            background: red;
+            /*background: red;*/
+            color:$blue;
+            font-weight:bold;
         }
     }
 </style>

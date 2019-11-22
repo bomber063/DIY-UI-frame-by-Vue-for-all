@@ -580,3 +580,33 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
         }
     }
 ```
+* 接着增加样式做的和ant.design一样的样式，就是白底黑字，当active的时候就字体变成蓝色字体，同时下面有一条蓝色的线，切换tab的时候，这个下面的线会跟着字体滑动。
+* 这里我们需要传入两个参数，提供给tabs.vue组件初始化的时候及在tab-item点击事件触发的时候使用。第二个参数就这个元素的位置。然后才可以通过获取位置来改变相应的下划线的位置。
+* 这里需要用到原生的[getBoundingClientRect()](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect)获取对应视口的位置。**但是这里要找到selected选中的和item一样的name的对应的组件的信息**,这里通过检查name(这个name是最开始的那么,比如GuluTabs)通过[$options.name](https://cn.vuejs.org/v2/api/#name)获取到。
+* 在tabs组件里面初始化的时候，因为需要找到它的子组件的组件，所以第二个参数要找到它，代码相对复杂一点
+```
+        mounted(){
+                //下面是初始选中的selected
+            this.$children.forEach((x)=>{
+                //第一次循环，因为有两个子组件，一个是head一个是body
+                if (x.$options.name === 'GuluTabsHead') {
+                    x.$children.forEach((item) => {
+                        //第二次循环，因为有三个子组件都是item,但是name不一样。然后找到它的options里面的name和它props里面的name就找到对应的子组件了props可以省略。比如item.name
+                        if (item.name === this.selected && item.$options.name === 'GuluTabsItem') {
+
+                            this.eventBus.$emit('update:selected', this.selected, item)
+                        }
+                    })
+                }
+            })
+        }
+```
+* 在item.vue组件里面被点击的元素就是自己，也就是第二个参数是this传值过去。
+```
+        methods:{
+            xxx(){
+                this.eventBus.$emit('update:selected',this.name,this)
+            //    这里emit触发了update:selected事件，并且把this.name传给了上面的$on绑定的事件，
+            }
+        }
+```
