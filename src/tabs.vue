@@ -33,14 +33,15 @@
                 eventBus:this.eventBus
             }
         },
-        created(){
+        mounted(){
             // console.log('eventBus')
             // console.log(this.eventBus)
             // console.log('this')
             // console.log(this)
                 // this.$emit('update:selected','xxx')
                 // this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
-                // this.eventBus.$emit('update:selected','我是this.eventBus.$emit触发的事件出来的数据')
+                //下面是初始选中的selected
+                this.eventBus.$emit('update:selected',this.selected)
         }
     }
 </script>

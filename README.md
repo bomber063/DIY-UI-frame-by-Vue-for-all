@@ -374,7 +374,7 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
     * 当然你可以使用[$root](https://cn.vuejs.org/v2/api/#vm-root)来主动使他冒泡，但是并不推荐这样去做。
 * 最后总结就是要注意：
     1. 事件是在**哪个对象上面触发调用的**，在哪个对象上面触发调用就是只能在那个对象上面监听事件。
-    2. 在Vue中事件不会冒泡，在子标签上面触发的事件不会自动传到父标签上面触发
+    2. 在**Vue中事件不会冒泡**，在子标签上面触发的事件不会自动传到父标签上面触发
 
 #### 小问题关于管道符号
 * 老师视频里面有一个错误把竖直线当成或了,写成了`String|Number`，此处是一个手误（方方老师说把 TypeScript 语法乱入进来了），正确写法是 `[String, Number]`,而在Vue文档里面用到很多**管道符竖直线**，但是大部分都是类型里面用到的。Vue中真正的管道符是[过滤器](https://cn.vuejs.org/v2/guide/filters.html),新旺老师在答疑群里面说道**类型 一般默认 一条线**
@@ -386,3 +386,129 @@ git push --set-upstream origin new_branch # Push the new branch, set local branc
               required:true
           }
 ```
+### 为什么一个new Vue()可以构造事件中心eventBus
+* 这个其实在前面有链接也说明过,就是[Vue的事件中心](https://cn.vuejs.org/v2/guide/migration.html#dispatch-%E5%92%8C-broadcast-%E6%9B%BF%E6%8D%A2),因为`var eventHub = new Vue()`,他就可以在组件中，可以使用 $emit, $on, $off 分别来触发、监听、取消监听事件,也就是说**一个对象可以$emit, $on, $off这三种接口,就可以当做事件中心,刚好new Vue()返回的对象全部都可以满足**,为什么要用它的原因就是单纯的知识它刚好也有这三个接口,其他的功能不需要使用。这就是为什么一个new Vue()就可以变成事件中心eventBus。因为行为完全一样。
+* 如果你把这个eventBus不写成`new Vue()`,而写成this，也就是某个组件的对象，那么就不是隔离的对象，触发一个事件，外面也会知道,就会有影响。所以需要一个新的并且可以跟外界隔离的eventBus,尽量不要混在一起。
+### 写CSS样式和实现切换Tab
+***
+* 用webStorm的小技巧，如果在CSS需要模糊搜索，这样就可以写出开头就可以自动提示你想要的代码，通过设置里面查询emmet然后对应的CSS里面勾选enable fuzzy search among CSS abbreviations，不仅支持emmet，还支持模糊搜索。然后第四个的auto insert css vendor prefix可以取消掉，因为现在已经不需要使用前缀的CSS代码啦。
+***
+* 这里用到[flex-shrink](https://developer.mozilla.org/en-US/docs/Web/CSS/flex-shrink)和[flex-grow](https://developer.mozilla.org/en-US/docs/Web/CSS/flex-grow)
+    * flex-shrink是收缩规则，默认是1，也就是按照一倍的收缩,也就是自身大小宽度收缩，但是不会收缩小于字体内容宽度。如果写成0，它就不收缩了。就会变宽，如果字体太多就会超过它本身的宽度。**如果记不住，可以记住压抑，就是压缩为默认1**。
+    * flex-grow是拉伸因子，默认是0，也就是0倍的拉伸，也就是不拉伸，就算设置无限大，它的拉伸也不会超过自己字体宽度或者所设定的宽度。**如果记不住，可以记住拉链，就是拉伸为默认0**。
+* tabs-item的宽度最高不要太宽，并且使固定的。可以参考ant.design上面就是都靠左，那么就可以使用`justify-content: flex-start;`,**但是它会被tabs-item的`flex-grow:1`覆盖**，所以需要把`flex-grow:1`变成默认的`flex-grow:0`,也就是默认的0
+* 然后我们需要把设置放到最右边去，**因为slot上面是不能用class**，所以需要增加一个div
+```
+        <div class="actions-wrapper">
+            <slot name=actions></slot>
+        </div>
+```
+* 靠右边可以通过margin来调整
+```
+        > .actions-wrapper{
+            margin-left:auto;
+        }
+```
+#### 为什么margin-left:auto可以靠右边
+* 因为`'margin-left' + 'border-left-width' + 'padding-left' + 'width' + 'padding-right' +'border-right-width' + 'margin-right' = width of containing block`
+***
+* **也就是在上述等式中，只有你设置的`margin-left: auto`,那么margin-left将会被设置为满足上述等式，而等式的右边是容器盒子宽度，等式中的其它值(除过width)都为0，因此margin-left = width of containing block - width(div)**,所以相当于`margin-left:整个容器的宽度`,详细可见[margin-left: auto;为什么可以使元素靠右](https://blog.csdn.net/gooodi/article/details/87110820)
+***
+#### 实现切换Tab显示相应的信息
+* class=一个函数，整个函数的返回值是一个true or false，然后判断name来实现true和false的切换就实现了Tab切换。
+* 首先需要一个激活active来存储true或者false,激活了就出现或者高亮某个，不激活的就保持原样。但是**这个激活的active应该放在date里面还是props里面呢**？
+    * 如果你需要用户传(这个用户是指前端开发者)值给你，那么就需要用props，因为他是需要在自定义组件的**标签上面用属性来传值的**，因为props是你的输入参数，就比如一个函数的参数
+    * 而data是内部的声明的局部变量，**不需要用户传值**，
+    * 比如看下面的props1,props2,data1,data2，props相当于参数，data相当于局部变量，组件其实就是一个函数
+    ```
+    function(props1,props2){
+        var data1
+        var data2
+    }
+    ```
+    * 而我们这里就使用data，因为不需要用户主动传值。
+* 那么data里面的active代码就是
+```
+        data(){
+          return {active:false}
+        },
+```
+* 我们在tabs.vue组件里面**初始**触发($emit)把选中的selected传给绑定($on)事件,这里需要mounted，因为只有mounted才会使得所有子组件都生成了，然后把this.selected传给了`this.eventBus.$on`
+```
+        mounted(){
+                //下面是初始选中的selected
+                this.eventBus.$emit('update:selected',this.selected)
+        }
+```
+* 然后在item和pane组件里面的`this.eventBus.$on`接受传过来的值,通过**当前的name和传过来的参数进行对比是否相等我们就知道谁被选中了**
+```
+        created() {
+            this.eventBus.$on('update:selected',(xxxname)=>{
+                if(this.name===xxxname){
+                    console.log(`我${this.name}被选中了`)
+                }
+                else{
+                    console.log(`我${this.name}没被选中了`)
+                }
+            })
+        },
+```
+* 把active的值作为一个class,用计算属性通过active来操作这个class的truthiness。
+```
+    <div class="tabs-item" @click="xxx" :class="classes">
+<!--        如果这里不用slot插槽，会被Vue自动删除-->
+        <slot></slot>
+    </div>
+    
+    computed: {
+        classes() {
+            return{active:this.active}
+        }
+    },
+```
+* **一共有三个item组件和三个pane组件**，这样选中了的item或者pane就可以把item和pane组件里面的active变成true，没有选中的item或者pane就是 false,true就会加上这个绑定class的对象里面的属性作为class名字，false就不会加上这个class。
+```
+            this.eventBus.$on('update:selected',(xxxname)=>{
+                if(this.name===xxxname){
+                    this.active=true
+                }
+                else{
+                    this.active=false
+                }
+            })
+```
+* 给class为active的增加CSS颜色来显示
+```
+        &.active{
+            background: red;
+        }
+```
+* 然后当item的某一项被**点击事件触发的时候**，会触发($emit)把选中的selected传给绑定($on)事件,我们在item组件里面写上xxx方法对应的把`this.nama`传给`this.eventBus.$on`绑定事件的参数
+```
+        methods:{
+            xxx(){
+                this.eventBus.$emit('update:selected',this.name)
+            }
+        }
+```
+#### 不仅选中的组件背景颜色高亮，还需要没被选中的隐藏掉
+* 就可以用到[v-if](https://cn.vuejs.org/v2/guide/conditional.html#v-if)
+* 我们只需要在pane组件里面加上下面代码就可以实现了,只要有active的表达式返回 truthy 值的时候被渲染,返回false就不渲染。
+```
+<template>
+    <div class="tabs-pane" :class="classes" v-if="active">
+<!--        如果这里不用slot插槽，会被Vue自动删除-->
+        <slot></slot>
+    </div>
+</template>
+```
+#### 简化生成新文件代码的小技巧
+* 新生成的文件可以初始化你写的代码，通过webStorm,当你新建一个vue文件，命名写一个x，那么就是在name里面写上为x
+```
+<script>
+    export default {
+        name: "x"
+    }
+</script>
+```
+* 加更多的初始化代码，可以在设置->File and Code template(文件和代码模板)里面增加
