@@ -687,3 +687,32 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
 ***
 * **目前这个问题我解决不了，就先不解决了**
 ***
+#### 完善样式，下面整体增加一条浅灰色的线
+* 在head.vue组件里面用CSS的border-bottom写
+```
+<style scoped lang="scss">
+    $tab-height:40px;
+    $blue:blue;
+    $border-color:#ddd;
+    .tabs-head{
+        display: flex;
+        height:$tab-height;
+        justify-content: flex-start;
+        border-bottom:1px solid $border-color;
+        position:relative;
+        > .line{
+            position:absolute;
+            bottom:0;
+            border-bottom:1px solid $blue;
+            transition: all 350ms;
+        }
+        > .actions-wrapper{
+            margin-left:auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding:0 1em;
+        }
+    }
+</style>
+```
