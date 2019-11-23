@@ -593,7 +593,6 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
                     x.$children.forEach((item) => {
                         //第二次循环，因为有三个子组件都是item,但是name不一样。然后找到它的options里面的name和它props里面的name就找到对应的子组件了props可以省略。比如item.name
                         if (item.name === this.selected && item.$options.name === 'GuluTabsItem') {
-
                             this.eventBus.$emit('update:selected', this.selected, item)
                         }
                     })
@@ -610,3 +609,81 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
             }
         }
 ```
+* 然后在head.vue组件里面通过`vm.$el.getBoundingClientRect()`获取到它的宽度和距离左边的距离,赋值给line的宽度和距离左边的距离就可以啦,这里用到[ref](https://cn.vuejs.org/v2/api/#ref)
+```
+        mounted(){
+            this.eventBus.$on('update:selected',(name,vm)=> {
+                let {width,height,top,left}=vm.$el.getBoundingClientRect()
+                this.$refs.line.style.width=`${width}px`
+                this.$refs.line.style.left=`${left}px`
+            })
+        }
+```
+* 然后在head.vue组件里面给line增加CSS为transition的**动画**
+```
+    .tabs-head{
+        > .line{
+            position:absolute;
+            bottom:0;
+            border-bottom:1px solid $blue;
+            transition: all 350ms;
+        }
+```
+#### 用left还是transform(这里最后老师没有去完成)
+* 前面我们用到left,但是如果使用transform还可以支持硬件3D加速，left是不能做3D加速。为了速度可以把left改成transform。
+```
+    this.$refs.line.style.transform=`translateX(${left}px)`
+```
+* 但是前面已经修改了宽度width，所以加速与否都无所谓，都会很慢
+* 但是把left变为transform之后会使得一开始会从最左边滑进来，如果不想要这个最开始的滑动可以把CSS也设置为一样的距离左边的距离,因为我们可以获取到left的值是127px，所以直接就可以写到CSS里面,这样就不会出现一开始的滑动了。
+```
+        > .line{
+            position:absolute;
+            bottom:0;
+            border-bottom:1px solid $blue;
+            transform:translateX(127px);
+            transition: all 350ms;
+        }
+```
+* 老师这里用到的是v-if设置为true或者false来使他刚开始隐藏。v-if会控制div是否会显示在DOM里面。当他由false变成true的时候，会新增一个更新UI任务到任务队列。所以还需要用到nextTick函数，因为渲染之后line就消失了，所以取不到对应的line的信息，所以需要使用nextTick把获取line信息的代码放到队列的最后，但是还是**存在滑动**
+```
+<template>
+    <div class="tabs-head">
+        <slot></slot>
+<!--        v-if会控制div是否显示在DOM里面-->
+        <div ref="line" class="line" v-if="x"></div>
+        <div class="actions-wrapper">
+            <slot name=actions></slot>
+        </div>
+    </div>
+</template>
+<script>
+    export default {
+        name:'GuluTabsHead',
+        inject:['eventBus'],
+        data(){
+            return {
+                x:false
+            }
+        },
+        mounted(){
+            this.eventBus.$on('update:selected',(name,vm)=> {
+                this.x=true
+                //新增一个'更新UI任务'到任务队列里面
+                this.$nextTick(()=>{
+                    //新增一个函数，放到任务队列里面，由于this.x=true是先放进去的，所以这里比他靠后，这样就能获取到line，就不会显示undefined了
+                    let {width,height,top,left}=vm.$el.getBoundingClientRect()
+                    this.$refs.line.style.width=`${width}px`
+                    this.$refs.line.style.transform=`translateX(${left}px)`
+                })
+            })
+        }
+    }
+</script>
+```
+* 因为最后测试还是存在一开始的滑动，所以老师放弃了使用transform,还是使用left。
+#### chrome浏览器的一个小数问题
+* 我这里通过`vm.$el.getBoundingClientRect()`返回的数值保留了小数点后很多位，我不知道为什么，我在JSbin上用原生代码可以是一个整数，在edge浏览器上显示的也是一个整数
+***
+* **目前这个问题我解决不了，就先不解决了**
+***

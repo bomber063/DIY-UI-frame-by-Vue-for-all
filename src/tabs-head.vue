@@ -13,13 +13,18 @@
     export default {
         name:'GuluTabsHead',
         inject:['eventBus'],
-        created(){
+        mounted(){
             // console.log('爷爷给爸爸的eventBus')
             // console.log(this.eventBus)
             // this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
             this.eventBus.$on('update:selected',(name,vm)=> {
                 console.log(name);
-                console.log(vm.$el)
+                console.log(vm.$el);
+                let {width,height,top,left}=vm.$el.getBoundingClientRect();
+                console.log(Math.round(width),Math.round(height),Math.round(top),Math.round(left));
+                console.log(width,height,top,left);
+                this.$refs.line.style.width=`${width}px`;
+                this.$refs.line.style.left=`${left}px`;
             })
         }
     }
@@ -32,13 +37,15 @@
         height:$tab-height;
         justify-content: flex-start;
         align-items: center;
-        border:1px solid red;
+        /*border:1px solid red;*/
         position:relative;
         > .line{
             position:absolute;
             bottom:0;
             border-bottom:1px solid $blue;
-            width:100px;
+            /*width:100px;*/
+            /*transform:translateX(127px);*/
+            transition: all 350ms;
         }
         > .actions-wrapper{
             margin-left:auto;
