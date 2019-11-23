@@ -716,3 +716,46 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
     }
 </style>
 ```
+#### 增加disabled功能
+* 这里的disabled被禁止选择的功能是CSS实现的，**但是用JS还是可以选中**
+* 增加一个disabled的class
+```
+        computed: {
+            classes() {
+                return{
+                    active:this.active,
+                    disabled:this.disabled
+                }
+            }
+        },
+```
+* 然后判断如果是disabled就什么都不做,当然还需要props里面有disabled，然后外面传值过来
+```
+        props:{
+          disabled:{
+              type:Boolean,
+              default: false
+          },
+        }
+
+        methods:{
+            onClick(){
+                if(this.disabled){
+                    return
+                }
+                else{
+                    this.eventBus.$emit('update:selected',this.name,this)
+                }
+            }
+        }
+        
+        //下面是外面的传值，直接写出来就代表是一个真实的值，就是true,也可以写成:disabled="true"
+        <g-tabs-item name="woman" disabled>
+```
+* 给一disabled的样式
+```
+        &.disabled{
+            color:$disabled-text-color;
+            cursor: not-allowed;
+        }
+```

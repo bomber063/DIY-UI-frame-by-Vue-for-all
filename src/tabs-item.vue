@@ -1,5 +1,5 @@
 <template>
-    <div class="tabs-item" @click="xxx" :class="classes">
+    <div class="tabs-item" @click="onClick" :class="classes">
 <!--        如果这里不用slot插槽，会被Vue自动删除-->
         <slot></slot>
     </div>
@@ -7,16 +7,12 @@
 <script>
     export default {
         name:'GuluTabsItem',
-        disabled:{
-            type:Boolean,
-            default:false
-        },
         data(){
           return {active:false}
         },
         inject:['eventBus'],
         props:{
-          disable:{
+          disabled:{
               type:Boolean,
               default: false
           },
@@ -28,7 +24,10 @@
         },
         computed: {
             classes() {
-                return{active:this.active}
+                return{
+                    active:this.active,
+                    disabled:this.disabled
+                }
             }
         },
         created() {
@@ -47,8 +46,13 @@
             })
         },
         methods:{
-            xxx(){
-                this.eventBus.$emit('update:selected',this.name,this)
+            onClick(){
+                if(this.disabled){
+                    return
+                }
+                else{
+                    this.eventBus.$emit('update:selected',this.name,this)
+                }
             //    这里emit触发了update:selected事件，并且把this.name传给了上面的$on绑定的事件，
             }
         }
@@ -56,6 +60,7 @@
 </script>
 <style scoped lang="scss">
     $blue:blue;
+    $disabled-text-color:grey;
     .tabs-item{
         /*flex-grow:1;*/
         /*下面默认是1，如果长度超过本身宽度就让他换行，不然会超出显示器到外面去*/
@@ -72,6 +77,10 @@
             /*background: red;*/
             color:$blue;
             font-weight:bold;
+        }
+        &.disabled{
+            color:$disabled-text-color;
+            cursor: not-allowed;
         }
     }
 </style>
