@@ -912,4 +912,4 @@ step3：编辑好之后，输入【:wq】，即保存和退出。
 step4：输入【git push -f】强制提交。
 
 操作完之后，再看提交记录，即可看到修改的注释信息。
-原文来自于[git】 修改已经push了的commit信息](https://blog.csdn.net/qq_33237207/article/details/98621783)
+原文来自于[【git】 修改已经push了的commit信息](https://blog.csdn.net/qq_33237207/article/details/98621783)
