@@ -1,5 +1,5 @@
 <template>
-    <div class="tabs-item" @click="onClick" :class="classes">
+    <div class="tabs-item" @click="onClick" :class="classes" :data-name="name">
 <!--        如果这里不用slot插槽，会被Vue自动删除-->
         <slot></slot>
     </div>
@@ -33,17 +33,19 @@
         created() {
             // console.log('爷爷给孙子的eventBus')
             // console.log(this.eventBus)
-            this.eventBus.$on('update:selected',(xxxname)=>{
-                // 下面的代码可以用webStorm优化，但是我这里为了自己以后看明白就不优化了
-                if(this.name===xxxname){
-                    // console.log('我是item'+`我${this.name}被选中了`)
-                    this.active=true
-                }
-                else{
-                    this.active=false
-                    // console.log('我是item'+`我${this.name}没被选中了`)
-                }
-            })
+            if(this.eventBus){
+                this.eventBus.$on('update:selected',(xxxname)=>{
+                    // 下面的代码可以用webStorm优化，但是我这里为了自己以后看明白就不优化了
+                    if(this.name===xxxname){
+                        // console.log('我是item'+`我${this.name}被选中了`)
+                        this.active=true
+                    }
+                    else{
+                        this.active=false
+                        // console.log('我是item'+`我${this.name}没被选中了`)
+                    }
+                })
+            }
         },
         methods:{
             onClick(){
@@ -51,7 +53,8 @@
                     return
                 }
                 else{
-                    this.eventBus.$emit('update:selected',this.name,this)
+                    this.eventBus&&this.eventBus.$emit('update:selected',this.name,this)
+                    this.$emit('click',this)
                 }
             //    这里emit触发了update:selected事件，并且把this.name传给了上面的$on绑定的事件，
             }

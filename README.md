@@ -752,10 +752,150 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
         //下面是外面的传值，直接写出来就代表是一个真实的值，就是true,也可以写成:disabled="true"
         <g-tabs-item name="woman" disabled>
 ```
-* 给一disabled的样式
+* 给class为disabled的样式
 ```
         &.disabled{
             color:$disabled-text-color;
             cursor: not-allowed;
         }
 ```
+### 开始写测试
+* 创建tabs.test.js，
+    * 首先测试Tabs它是存在的
+    ```
+        it('存在.', () => {
+            expect(Tabs).to.exist
+        })
+    ```
+    * 然后测试它的子元素是head和body,因为这个不方便测试，所以我们在tabs.vue组件上面主动写一个代码就是当它的子组件不是head或者body的时候就抛出一个错误提示。用到[throw](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Statements/throw)和[Error构造器](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Error)
+    ```
+        mounted(){
+            if(this.$children.length===0){
+                throw new Error('tabs的子组件应该是tabs-head和tabs-body,但你没有写子组件')
+            }
+        }
+    ```
+    * 方方老师用的ios系统中在karma测试中也可以看到报错信息。我用的window看不到，不知道为什么，但是可以在chrome浏览器中看到。
+    * 测试用例中如何测试这个报错信息呢？通过在google中搜索chai expect error，可以找到chai的[throw语法](https://www.chaijs.com/api/bdd/#method_throw),给的例子是
+    ```
+    var badFn = function () { throw new TypeError('Illegal salmon!'); };
+    
+    expect(badFn).to.throw();
+    ```
+    * 这里还需要考虑异步问题，因为Vue是异步的报错。就类似下面代码就不可以
+    ```
+            expect(
+                 setTimeout(()=>{
+                    throw new Error('hi')
+                 },0)
+            ).to.throw();
+    ```
+    * 所以继续在google上面搜索chai async error找到一个用[await](https://stackoverflow.com/questions/45466040/verify-that-an-exception-is-thrown-using-mocha-chai-and-async-await),但是我不会用，老师最后也放弃了。
+    * 放弃之后选择让他不报错，并且弹出一个警告。因为有的浏览器是没有console或者console.warn的，所写成
+    ```
+        if(this.$children.length===0){
+            // throw new Error('tabs的子组件应该是tabs-head和tabs-body,但你没有写子组件')
+            console&&console.warn&&console.warn('tabs的子组件应该是tabs-head和tabs-body,但你没有写子组件')
+        }
+    ```
+    * 测试selected属性，因为Vue是异步的，所以要用到[vm.$nextTick](https://cn.vuejs.org/v2/api/#vm-nextTick),为了可测试性，我们可以通过增加属性，比如在item组件上增加`:data-name="name""`
+    ```
+    <template>
+        <div class="tabs-item" @click="onClick" :class="classes" :data-name="name">
+            <slot></slot>
+        </div>
+    </template>
+    ```
+    * 测试代码为
+    ```
+        it('可以接受selected属性',(done)=>{
+                const div=document.createElement('div');
+                document.body.appendChild(div);
+                div.innerHTML=`
+        <g-tabs selected="finance">
+            <g-tabs-head>
+                <g-tabs-item name="woman">美女</g-tabs-item>
+                <g-tabs-item name="finance">财经</g-tabs-item>
+                <g-tabs-item name="sports">体育</g-tabs-item>
+            </g-tabs-head>
+            <g-tabs-body>
+                <g-tabs-pane name="woman"> 美女相关资讯 </g-tabs-pane>
+                <g-tabs-pane name="finance"> 财经相关资讯 </g-tabs-pane>
+                <g-tabs-pane name="sports"> 体育相关资讯 </g-tabs-pane>
+            </g-tabs-body>
+        </g-tabs>
+                `
+                let vm=new Vue({
+                    el:div
+                });
+                vm.$nextTick(()=>{
+                    let item=document.querySelector('.tabs-item[data-name="finance"]')
+                    expect(item.classList.contains('active')).to.be.true
+                    done()
+                })
+        });
+    ```
+    * 测试direction属性测试暂时先不写，后面再补上。
+* head组件没有什么接受的信息，所以不测试
+* 最复杂的item组件
+    * 测试这个软件需要加上一些代码，因为要依赖tabs组件上面的eventBus,如果不加代码会报错`TypeError: Cannot read property '$on' of undefined
+`,所以我们在item组件上增加代码网易没有eventBus的判断。但是因为还有inject还里面，所以还是会报错`Injection "eventBus" not found`，暂时先不管了,可以接受name属性的测试代码如下
+    ```
+        it('可以接收name属性.', () => {
+            const Constructor = Vue.extend(TabsItem)
+            const vm = new Constructor({
+                propsData: {
+                    name: 'xxx'
+                }
+            }).$mount()
+            expect(vm.$el.getAttribute('data-name')).to.equal('xxx')
+        })
+    ```
+    * 可以接受disabled属性,因为disabled是无法被点击的，所以除了检测有disabled的class以外，还需要测试它不可以被点击，所用要用sinon。disabled属性为false的时候的测试代码如下:
+    ```
+    it('可以接收disabled属性,测试false的时候.', () => {
+        const Constructor = Vue.extend(TabsItem)
+        const vm = new Constructor({
+            propsData: {
+                disabled: false
+            }
+        }).$mount()
+        expect(vm.$el.classList.contains('disabled')).to.equal(false)
+        const callback = sinon.fake();
+        vm.$on('click', callback)
+        vm.$el.click()
+        expect(callback).to.have.been.called
+    })
+    ```
+    * 如果是true的时候，还需要在存在eventBus的前提。还需要把click之后，然后item通知外界，就需要增加`this.$emit('click',this)`
+    ```
+            methods:{
+                onClick(){
+                    if(this.disabled){
+                        return
+                    }
+                    else{
+                        this.eventBus&&this.eventBus.$emit('update:selected',this.name,this)
+                        this.$emit('click',this)
+                    }
+                }
+            }
+    ```
+    * true的时候代码为
+    ```
+    it('可以接收disabled属性,测试true的时候.', () => {
+        const Constructor = Vue.extend(TabsItem)
+        const vm = new Constructor({
+            propsData: {
+                disabled: true
+            }
+        }).$mount()
+        expect(vm.$el.classList.contains('disabled')).to.equal(true)
+        const callback = sinon.fake();
+        vm.$on('click', callback)
+        vm.$el.click()
+        expect(callback).to.have.not.been.called
+    })
+    ```
+* 其他的测试暂时先不测，后续再测试。但是不去测试代码，是存在一些问题的，这个会在中级轮子的时候再去说明如何去避免程序员的惰性。就是通过测试覆盖率来检测这个必须测试。
+* 之后会再引入一个工具，会看你测试的代码和你写的代码是否是百分之百(100%)全部覆盖。如果没有100%就必须要写到100%为止。不到100%就不让通过。

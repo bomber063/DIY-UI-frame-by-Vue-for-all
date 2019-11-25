@@ -18,11 +18,7 @@
             // console.log(this.eventBus)
             // this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
             this.eventBus.$on('update:selected',(name,vm)=> {
-                console.log(name);
-                console.log(vm.$el);
                 let {width,height,top,left}=vm.$el.getBoundingClientRect();
-                console.log(Math.round(width),Math.round(height),Math.round(top),Math.round(left));
-                console.log(width,height,top,left);
                 this.$refs.line.style.width=`${width}px`;
                 this.$refs.line.style.left=`${left}px`;
             })
