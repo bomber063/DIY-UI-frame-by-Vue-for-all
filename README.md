@@ -899,3 +899,17 @@ Avoid mutating a prop directly since the value will be overwritten whenever the 
     ```
 * 其他的测试暂时先不测，后续再测试。但是不去测试代码，是存在一些问题的，这个会在中级轮子的时候再去说明如何去避免程序员的惰性。就是通过测试覆盖率来检测这个必须测试。
 * 之后会再引入一个工具，会看你测试的代码和你写的代码是否是百分之百(100%)全部覆盖。如果没有100%就必须要写到100%为止。不到100%就不让通过。
+### 【git】 修改已经push了的commit信息
+由于最后一次我提交的commit信息写错了，所以记录如下修改过程  
+如题，本条仅适用于修改已经push过了的最近一次的commit注释信息，确保本地文件的最新的。
+
+step1：使用【git commit --amend】命令，会进入到vim编辑器。
+
+step2：输入【i】，即进入编辑模式，此时编辑提交信息。
+
+step3：编辑好之后，输入【:wq】，即保存和退出。
+
+step4：输入【git push -f】强制提交。
+
+操作完之后，再看提交记录，即可看到修改的注释信息。
+原文来自于[git】 修改已经push了的commit信息](https://blog.csdn.net/qq_33237207/article/details/98621783)
