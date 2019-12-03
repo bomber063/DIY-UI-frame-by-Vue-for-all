@@ -275,3 +275,70 @@
             }
         }
 ```
+### 第二种方法（推荐，但是也修复和很多BUG）
+* 前面的bug在说一下：
+    1. 如果前面的popover组件的父元素上面有一个`over-flow:hidden`样式，点击弹出这个popover的时候式看不到的，因为被高度限制了。所以不能把弹出的div放在按钮button的同一个层级。应该放到最外面，作为body的子元素。
+    2. 第二个bug，就是阻止冒泡，也就是通过`@click.stop`阻止冒泡，但是当在这个组件的父元素上面写上`@click="yyy"`绑定事件后,点击button或者弹出的popover气泡框是不会去执行的yyy这个事件的。但是点击这个div上面就可以触发这个yyy事件，因为它被`@click.stop`打断了。只有在这个div本身才可以触发。
+    ```
+        <div style="overflow: hidden;border:1px solid red;padding:10px;" @click="yyy">
+        <g-popover>
+
+        </g-popover>
+        </div>
+    ```
+* 通过[ref](https://cn.vuejs.org/v2/api/#ref)来获取然后移动它到body下面。但是这里**需要注意当[v-if](https://cn.vuejs.org/v2/guide/conditional.html#v-if)是false的时候是拿不到它的，也就是不出现在页面里(只是改变是否存在DOM树中)。这里可以改用[v-show](https://cn.vuejs.org/v2/guide/conditional.html#v-show),因为v-show是出现在页面里面，只是被CSS隐藏起来了(也就是只是改变CSS样式)，具体可以可查看[v-if vs v-show](https://cn.vuejs.org/v2/guide/conditional.html#v-if-vs-v-show)**，另外还用到[appendChild](https://developer.mozilla.org/zh-CN/docs/Web/API/Node/appendChild)
+```
+        <div ref="contentWrapper" class="content-wrapper" v-show="visible" @click.stop>
+        <slot name="content"></slot>
+        </div>
+        
+        mounted() {
+            // setTimeout(()=>{
+            document.body.appendChild(this.$refs.contentWrapper)
+            // },1000)
+        }
+```
+* 它虽然被移动走了,但是绑定的点击事件还是存在保持不变的，也就是不会影响它的任何功能，只是移动它的位置而已。这样就解决了放到同一级而被`over-flow:hidden`影响的问题.
+* 前面用的是v-show，但是最好还是用v-if,因为不想让它刚开始就存在页面DOM里面，所以当它点击为true的时候才开始移动到body上面去。这里要延迟一下，可以使用this.$nextTick()
+```
+                if (this.visible === true) {
+                    this.$nextTick(()=>{
+                    document.body.appendChild(this.$refs.contentWrapper)
+                    })
+                    下面的代码省略
+                }
+```
+* popover弹出框移动位置后，接下来就是写样式，让这个弹出的popover组件出现在button上面，通过CSS实现就好了,但是要先获取到这个切换器(trigger)这个button的信息，可以通过ref，但是slot是不支持ref的,所以要在外面加上一个span,在span上面使用ref。然后用.getBoundingClientRect来获取宽高等位置信息。然后通过把triggerWrapper的位置信息赋值给contentWrapper，这里需要注意使用绝地定位哦。但是这里因为使用了scoped，那么移出去的就不在popover这个class的里面，所以就要放到popover这个class的外面去。这样就是解决了`over-flow:hidden`的大概思路。
+```
+template部分代码
+        <span ref="triggerWrapper">
+            <slot></slot>
+        </span>
+        
+script部分代码
+        this.$nextTick(() => {
+            let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
+            console.log(width, height, left, top)
+            this.$refs.contentWrapper.style.top = top + 'px'
+            this.$refs.contentWrapper.style.left = left + 'px'
+            document.body.appendChild(this.$refs.contentWrapper)
+        })
+SCSS部分代码
+        .content-wrapper{
+            position:absolute;
+            border:1px solid red;
+            box-shadow: 0 0 3px rgba(0,0,0,0.5);
+            transform: translateY(-100%);
+        }
+```
+#### 还存在bug
+#### 我今天才发现原来appendChild是直接移动，而不是复制
+* Node.appendChild() 方法将一个节点添加到指定父节点的子节点列表**末尾**。
+* appendChild 方法会把要**插入的这个节点引用作为返回值返回**.
+``` 
+var child = node.appendChild(child);
+```
+> node 是要插入子节点的父节点.    
+  child 即是参数又是这个方法的返回值.
+* **是直接移动，不是复制**。
+* 具体测试见[jsBin](https://jsbin.com/reruwokore/1/edit?html,js,output)

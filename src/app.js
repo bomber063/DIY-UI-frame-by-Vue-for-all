@@ -68,8 +68,8 @@ new Vue({
 
     },
     methods:{
-        yyy(aaa){
-          console.log(aaa)
+        yyy(){
+          console.log('yyy')
         },
         showToastTop() {
             this.showToast('top')
