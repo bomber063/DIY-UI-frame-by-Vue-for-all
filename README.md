@@ -331,7 +331,20 @@ SCSS部分代码
             transform: translateY(-100%);
         }
 ```
-#### 还存在bug
+#### 还存在可能的bug,它是getBoundingClientRect视口定位与绝对定位的差别的bug
+* 如果最外面还有一个单独div，并且高度很高。从而popover组件上面部分有一个很高的div占据。
+```
+<div class="test" style="border:1px solid red; height:1000px;"></div>
+```
+* 因为[getBoundingClientRect](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/getBoundingClientRect)是**相对于视口的距离**，而absolute的绝对定位是**相对于body(因为弹出的popover被移动到body下面)定位**的。解决其实很简单，为此我还专门写了[一篇博客getBoundingClientRect,clientHeight,scrollHeight等测试](https://zhuanlan.zhihu.com/p/95370151)来记录加深影响,增加一个[window.scrollY](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/scrollY)即可
+```
+    this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
+```
+* 但是有小部分浏览器可能不支持。兼容性不好，这里老师本来想在google上面搜索[js get elemen offset relative to document](https://www.google.com/search?sxsrf=ACYBGNTUJhkprs_6ROIM2wuIRQ4vhLuezA%3A1575546387524&ei=E-7oXdvJH4bt9QO27YHYCg&q=js+get+element+offset+relative+to+document&oq=js+get+element+offset+relative+to+document&gs_l=psy-ab.12..35i39.13503.13503..16021...0.0..0.107.301.2j1......0....1..gws-wiz.......35i304i39.v6Fo6OgdLLA&ved=0ahUKEwibn4XWt57mAhWGdn0KHbZ2AKsQ4dUDCAs),但是由于网络问题就没有继续搜索了，因为后续还会测试。
+* 垂直方向增加了，同样的，水平方向也加上，左边有一个很宽的div或者某个元素或者属性使其出现bug。
+```
+    this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
+```
 #### 我今天才发现原来appendChild是直接移动，而不是复制
 * Node.appendChild() 方法将一个节点添加到指定父节点的子节点列表**末尾**。
 * appendChild 方法会把要**插入的这个节点引用作为返回值返回**.

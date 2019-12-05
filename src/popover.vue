@@ -15,24 +15,16 @@
         data(){
           return {visible:false}
         },
-        mounted() {
-            // console.log('hi')
-            console.log(this.$refs.triggerWrapper)
-            // console.log(this.$refs.contentWrapper)
-        },
         methods: {
             xxx() {
                 this.visible = !this.visible;
                 if (this.visible === true) {
                     this.$nextTick(() => {
                         let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
-                        console.log(width, height, left, top)
-                        this.$refs.contentWrapper.style.top = top + 'px'
-                        this.$refs.contentWrapper.style.left = left + 'px'
+                        this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
+                        this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
                         document.body.appendChild(this.$refs.contentWrapper)
-                    })
-
-
+                    });
                     console.log('visible切换为true');
                     setTimeout(() => {
                         let eventHandler = () => {
