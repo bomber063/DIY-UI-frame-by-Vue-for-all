@@ -508,6 +508,106 @@ SCSS部分代码
     ```
 
 * 如果一开始就去监听document是比较省事，不用考虑关闭多次的情况，但是如果有很多button进入网页就被监听，那么就比较浪费内存，因为有些是不一定需要监听。只有在点击打开的时候才需要监听器。如果是add然后remove一个监听，就比较需要考虑及时关闭和移除监听的问题。但是这样就把需要监听的监听，不需要监听的就不监听，比较节省内存。
+#### 引入的内聚模式来继续重构代码，这种方法逻辑更清晰
+* 很多人说高内聚(就是把关闭的入口收拢一下)，低耦合。高内聚大概意思就是
+    > 如果这个代码是特别重要的就不要把它分散在各个地方了。而把它内聚到一个方法上面。
+* 比如增加
+    * onClickDocument方法.
+    * close方法
+    * open方法
+    * onClick方法等
+* 这里还需要把eventHandler提取出来作为一个全局方法，要不然别的地方访问不到，**但是这里没有用箭头函数，理论上来说不用箭头函数的function函数里面的this是会改变的，但是在这里的Vue组件里面居然没有改变，有点奇怪，可能是Vue组件它去优化了吧,但是Vue这样我觉得有点不合适，理论上说如果`document.addEventListener('click', this.eventHandler)`这里的的this是document。那么在eventHandler函数里面也应该是document，但是这里却是popover组件。**，我们可以通过[jsBin](https://jsbin.com/pakivapibo/1/edit?html,css,js,output)测试知道.
+* **老师的onClickDocument里面的代码是这样的**，但是我测试后发现**点击弹出的popover气泡框是会消失关闭的**。按理论来说应该不要关闭，所以**还是存在bug**。
+```
+        onClickDocument(e){
+                if(this.$refs.popover&&
+                    (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
+                ){return}
+                this.close()
+        },
+```
+* 我的onClickDocument里面的代码是这样的,这里点击弹出的popover气泡框是不会消失的。
+```
+            onClickDocument(e){
+                // 这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                //     当this.visible是true的情况下的判断document绑定的事件及元素
+                    if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+                        return
+                    }
+                    if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+                        this.close()
+                        console.log('document监听导致的关闭,如果已经关闭可以忽略')
+                    }
+                    if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+                        document.removeEventListener('click', this.onClickDocument)
+                    }
+                //下面是老师的onClickDocument代码
+                //     if(this.$refs.popover&&
+                //         (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
+                //     ){return}
+                //     this.close()
+            },
+```
+* 整个重构的代码,包括四个方法，这里不包括positionContent,因为它不是重构的代码。
+    * onClickDocument方法.
+    * close方法
+    * open方法
+    * onClick方法等
+```
+        methods: {
+            onClickDocument(e){
+                // 这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                //     当this.visible是true的情况下的判断document绑定的事件及元素
+                    if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+                        return
+                    }
+                    if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+                        this.close()
+                        console.log('document监听导致的关闭,如果已经关闭可以忽略')
+                    }
+                    if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+                        document.removeEventListener('click', this.onClickDocument)
+                    }
+                //下面是老师的onClickDocument代码
+                //     if(this.$refs.popover&&
+                //         (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
+                //     ){return}
+                //     this.close()
+            },
+            open(){
+                this.visible = true
+                setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                    this.positionContent()
+                    document.addEventListener('click', this.onClickDocument)
+                });
+            },
+            close(){
+                this.visible = false
+                document.removeEventListener('click', this.onClickDocument)
+                console.log('内聚的关闭')
+            },
+            onClick(event) {
+                if(this.$refs.triggerWrapper.contains(event.target)){//这个event是整个popover组件里面的事件，那么event.target就是popover组件里面的元素，当然它包括了triggerWrapper所对应的元素
+                    console.log('下面的button被点击')
+                    if (this.visible === true) {//当前能看见就关闭
+                        this.close()
+                    }
+                    else{//当前不能看见就打开
+                        this.open()
+                        console.log('popover组件的关闭')
+                    }
+                }
+            }
+        }
+```
+***
+* 最后我们的功能就实现了:
+    1. 两个button之间可以互相点击打开及关闭，并且只打开一个。
+    2. 点击popover弹出气泡框不会关闭。
+    3. 点击document只会关闭一次。
+    4. 绑定事件也只有一次。
+    5. 可以绑定index.html外面传进来的事件，不阻止index.html传进来的绑定事件。
+***
 #### 我今天才发现原来appendChild是直接移动，而不是复制
 * Node.appendChild() 方法将一个节点添加到指定父节点的子节点列表**末尾**。
 * appendChild 方法会把要**插入的这个节点引用作为返回值返回**.
