@@ -16,43 +16,49 @@
           return {visible:false}
         },
         methods: {
+            positionContent(){
+                let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
+                this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
+                this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
+                document.body.appendChild(this.$refs.contentWrapper)
+            },
+            listenToDocument(){
+                let eventHandler = (e) => {//这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                    //当this.visible是true的情况下的判断document绑定的事件及元素
+                    if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+                        return
+                    }
+                    if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+                        this.visible = false;
+                        console.log('document监听导致的关闭')
+                        document.removeEventListener('click', eventHandler)
+                    }
+                    if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+                        document.removeEventListener('click', eventHandler)
+                    }
+
+                };
+                document.addEventListener('click', eventHandler)
+            },
+            onShow(){
+                setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                    this.positionContent()
+                    this.listenToDocument()
+                });
+            },
             onClick(event) {
                 if(this.$refs.triggerWrapper.contains(event.target)){//这个event是整个popover组件里面的事件，那么event.target就是popover组件里面的元素，当然它包括了triggerWrapper所对应的元素
-                    console.log(`我是button添加的event.target`)
                     this.visible = !this.visible;
                     console.log('下面的button被点击')
                     if (this.visible === true) {
-                        setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
-                            let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
-                            this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
-                            this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
-                            document.body.appendChild(this.$refs.contentWrapper)
-                            let eventHandler = (e) => {//这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
-                                console.log('我是document添加的e.target')
-                                //当this.visible是true的情况下的判断document绑定的事件及元素
-                                if (this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)) {//这里老师漏了this.$refs.contentWrapper不存在的情况会报错
-
-                                } else {
-                                    this.visible = false;
-                                    document.removeEventListener('click', eventHandler)
-                                    console.log('关闭')
-                                }
-                            };
-                            document.addEventListener('click', eventHandler)
-                        });
+                        this.onShow()
+                    }
+                    else{
+                        console.log('popover组件的关闭')
                     }
                 }
-                else{
-                    console.log('上面的弹出层的popover气泡框被点击')
-                }
-                // this.visible = !this.visible;
-
-                // else{
-                //     console.log('关闭')
-                // }
             }
         }
-
     }
 </script>
 

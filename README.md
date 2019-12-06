@@ -404,7 +404,7 @@ SCSS部分代码
 * 所以根据这个思路把详细代码，把document绑定的事件也加入。这里注意下面几点：
     * **这里由于this.$nextTick()又出现版本不同的原因，我把它修改为了setTimeout**。
     * 用到了**两个事件监听的参数**，一个是**document里面的,用e代表**，一个是**popover组件里面的，用event来代表**。
-    * **老师此处漏了this.$refs.contentWrapper不存在的情况**，我也补充进去了。
+    * **老师此处漏了this.$refs.contentWrapper不存在的情况**，我也补充进去了,这个不存在的问题老师在重构代码的时候发现了。
     * 最后还是通过document来执行，只是**在document里面也做一个if判断区分**
     ```
             methods: {
@@ -414,7 +414,7 @@ SCSS部分代码
                         this.visible = !this.visible;
                         console.log('下面的button被点击')
                         if (this.visible === true) {
-                            setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                            setTimeout(() => {//这里由于Vue版本不同，所以把this.$nextTick修改为setTimeout来延迟
                                 let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
                                 this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
                                 this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
@@ -440,6 +440,74 @@ SCSS部分代码
                 }
             }
     ```
+#### 重构代码
+* 老师在重构代码的这里发现了this.$refs.contentWrapper不存在的情况。
+```
+        methods: {
+            positionContent(){
+                let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
+                this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
+                this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
+                document.body.appendChild(this.$refs.contentWrapper)
+            },
+            listenToDocument(){
+                let eventHandler = (e) => {//这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                    //当this.visible是true的情况下的判断document绑定的事件及元素
+                    if (!(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target))) {
+                        this.visible = false;
+                        console.log('document监听导致的关闭')
+                        document.removeEventListener('click', eventHandler)
+                    }
+                };
+                document.addEventListener('click', eventHandler)
+            },
+            onShow(){
+                setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                    this.positionContent()
+                    this.listenToDocument()
+                });
+            },
+            onClick(event) {
+                if(this.$refs.triggerWrapper.contains(event.target)){//这个event是整个popover组件里面的事件，那么event.target就是popover组件里面的元素，当然它包括了triggerWrapper所对应的元素
+                    this.visible = !this.visible;
+                    console.log('下面的button被点击')
+                    if (this.visible === true) {
+                        this.onShow()
+                    }
+                    else{
+                        console.log('popover组件的关闭')
+                    }
+                }
+            }
+        }
+```
+#### 不用阻止冒泡的方法解决的bug(气泡框popover点击保持原样，点击button让popover组件切换visible，点击document然后document绑定事件切换visible，并且没有多次关闭的bug)
+* **另外还存在关闭关两次的情况**。所以在document添加事件绑定的时候判断如果是popover组件里面的就不去处理，让popover自己去处理关闭就好了.老师这里没有继续详细的做了.而是从另外一条思路去处理，而我这里就完善了代码，但是代码逻辑有点复杂,主要是在绑定document事件里面增加if语句，**分了三种情况**
+    1. 如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+    2. 如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+    3. 如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+    ```
+                listenToDocument(){
+                    let eventHandler = (e) => {//这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                        //当this.visible是true的情况下的判断document绑定的事件及元素
+                        if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+                            return
+                        }
+                        if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+                            this.visible = false;
+                            console.log('document监听导致的关闭')
+                            document.removeEventListener('click', eventHandler)
+                        }
+                        if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+                            document.removeEventListener('click', eventHandler)
+                        }
+    
+                    };
+                    document.addEventListener('click', eventHandler)
+                },
+    ```
+
+* 如果一开始就去监听document是比较省事，不用考虑关闭多次的情况，但是如果有很多button进入网页就被监听，那么就比较浪费内存，因为有些是不一定需要监听。只有在点击打开的时候才需要监听器。如果是add然后remove一个监听，就比较需要考虑及时关闭和移除监听的问题。但是这样就把需要监听的监听，不需要监听的就不监听，比较节省内存。
 #### 我今天才发现原来appendChild是直接移动，而不是复制
 * Node.appendChild() 方法将一个节点添加到指定父节点的子节点列表**末尾**。
 * appendChild 方法会把要**插入的这个节点引用作为返回值返回**.
