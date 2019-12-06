@@ -341,10 +341,105 @@ SCSS部分代码
     this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
 ```
 * 但是有小部分浏览器可能不支持。兼容性不好，这里老师本来想在google上面搜索[js get elemen offset relative to document](https://www.google.com/search?sxsrf=ACYBGNTUJhkprs_6ROIM2wuIRQ4vhLuezA%3A1575546387524&ei=E-7oXdvJH4bt9QO27YHYCg&q=js+get+element+offset+relative+to+document&oq=js+get+element+offset+relative+to+document&gs_l=psy-ab.12..35i39.13503.13503..16021...0.0..0.107.301.2j1......0....1..gws-wiz.......35i304i39.v6Fo6OgdLLA&ved=0ahUKEwibn4XWt57mAhWGdn0KHbZ2AKsQ4dUDCAs),但是由于网络问题就没有继续搜索了，因为后续还会测试。
-* 垂直方向增加了，同样的，水平方向也加上，左边有一个很宽的div或者某个元素或者属性使其出现bug。
+* 垂直方向增加了，同样的，水平方向也加上[window.scrollX](https://developer.mozilla.org/zh-CN/docs/Web/API/Window/scrollX)，左边有一个很宽的div或者某个元素或者属性使其出现bug。
 ```
     this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
 ```
+* 现在**不管当前页面有没有滚动条都可以精准的定位了**。
+#### 解决第二个问题，点击button的时候不能触发popover在index上面增加的事件
+* 比如在index.html上增加一个点击事件yyy,点击button的时候，是不能触发的。
+```
+    <div style="overflow: hidden;border:1px solid red;padding:10px;" @click="yyy">
+       <g-popover>
+
+       </g-popover>
+    </div>
+```
+* 因为冒泡被`.stop`阻止了
+```
+    <div class="popover" @click.stop="xxx">
+```
+* 如果只是简单的删除这个`.stop`，那么还是会存在bug。我们可以通过`console.log('关闭')`可以看到关闭了两次，一次是**document事件引起的关闭**，一次是**button上面的事件引起的关闭**
+```
+        methods: {
+            xxx() {
+                this.visible = !this.visible;
+                if (this.visible === true) {
+                    this.$nextTick(() => {
+                        let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
+                        this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
+                        this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
+                        document.body.appendChild(this.$refs.contentWrapper)
+                    });
+                    setTimeout(() => {
+                        let eventHandler = () => {
+                            this.visible = false;
+                            document.removeEventListener('click', eventHandler)
+                            console.log('关闭')
+                        };
+                        document.addEventListener('click', eventHandler)
+                    });
+                }
+                else if(this.visible === false){
+                    console.log('关闭')
+                }
+            }
+        }
+```
+* 怎么解决也不难，因为点击button会冒泡，但是点击的元素是button，那么我们只需要确定点击的是什么元素，然后通过if来判断执行相关的代码即可。比如如果点击是`<span ref="triggerWrapper">`，那就切换弹出层这个popover气泡框是否显示。如果点击的是弹出层`<div ref="contentWrapper" class="content-wrapper" v-if="visible">`就什么也不做。那怎么知道用户点击的是弹出层还是button呢？
+* 因为click函数的参数里面可以传入参数，这个参数的target就是这个被点击的元素，那么这个被点击的元素跟你的refs对比就知道了，通过[contains](https://developer.mozilla.org/zh-CN/docs/Web/API/Node/contains)来判断,具体看下面代码
+```
+        methods: {
+            onClick(event) {
+                if(this.$refs.triggerWrapper.contains(event.target)){
+                    this.visible = !this.visible;
+                    console.log('下面的button被点击')
+                }
+                else{
+                    console.log('上面的弹出层的popover气泡框被点击')
+                }
+            }
+        }
+```
+* 所以根据这个思路把详细代码，把document绑定的事件也加入。这里注意下面几点：
+    * **这里由于this.$nextTick()又出现版本不同的原因，我把它修改为了setTimeout**。
+    * 用到了**两个事件监听的参数**，一个是**document里面的,用e代表**，一个是**popover组件里面的，用event来代表**。
+    * **老师此处漏了this.$refs.contentWrapper不存在的情况**，我也补充进去了。
+    * 最后还是通过document来执行，只是**在document里面也做一个if判断区分**
+    ```
+            methods: {
+                onClick(event) {
+                    if(this.$refs.triggerWrapper.contains(event.target)){//这个event是整个popover组件里面的事件，那么event.target就是popover组件里面的元素，当然它包括了triggerWrapper所对应的元素
+                        console.log(`我是button添加的event.target`)
+                        this.visible = !this.visible;
+                        console.log('下面的button被点击')
+                        if (this.visible === true) {
+                            setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                                let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
+                                this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
+                                this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
+                                document.body.appendChild(this.$refs.contentWrapper)
+                                let eventHandler = (e) => {//这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                                    console.log('我是document添加的e.target')
+                                    //当this.visible是true的情况下的判断document绑定的事件及元素
+                                    if (this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)) {//这里老师漏了this.$refs.contentWrapper不存在的情况会报错
+    
+                                    } else {
+                                        this.visible = false;
+                                        document.removeEventListener('click', eventHandler)
+                                        console.log('关闭')
+                                    }
+                                };
+                                document.addEventListener('click', eventHandler)
+                            });
+                        }
+                    }
+                    else{
+                        console.log('上面的弹出层的popover气泡框被点击')
+                    }
+                }
+            }
+    ```
 #### 我今天才发现原来appendChild是直接移动，而不是复制
 * Node.appendChild() 方法将一个节点添加到指定父节点的子节点列表**末尾**。
 * appendChild 方法会把要**插入的这个节点引用作为返回值返回**.
