@@ -618,3 +618,66 @@ var child = node.appendChild(child);
   child 即是参数又是这个方法的返回值.
 * **是直接移动，不是复制**。
 * 具体测试见[jsBin](https://jsbin.com/reruwokore/1/edit?html,js,output)
+### 开始写CSS(支持四个方位)
+#### 首先回顾之前的三个bug
+* 三个bug的问题和解决思路
+    1. `overflow:hidden`导致bug,于是通过body.appendChild放到body里面,这个思路看起来简单，但是我们需要考虑是否需要增加window.scrollX和window.scrollY的问题。
+    2. 多次关闭，重复关闭，点一次关闭会被关闭两次或者多次。通过职责分开管理，document值管外面，popover只管里面。不要交叉管理。
+    3. 忘记取消document的监听。每次把visible变成false的时候都得取消这个document上的监听。这个忘记的原因主要是因为代码的结构不太好。通过把所有关闭的东西都收拢到一个方法里面比如close方法。最终就只有五个方法。
+#### 优化比较好的代码一般只有五行代码
+* 通过检查发现tabs组件里面mounted里面的代码超过了五行。
+```
+        mounted(){
+            if(this.$children.length===0){
+                    console&&console.warn&&console.warn('tabs的子组件应该是tabs-head和tabs-body,但你没有写子组件')
+            }
+
+            this.$children.forEach((vm)=>{
+                if (vm.$options.name === 'GuluTabsHead') {
+                    vm.$children.forEach((childVm) => {
+                        if (childVm.name === this.selected && childVm.$options.name === 'GuluTabsItem') {
+                            this.eventBus.$emit('update:selected', this.selected, childVm)
+                        }
+                    })
+                }
+            })
+        }
+```
+* 优化后的代码只有两行。
+```
+        methods:{
+            checkChildren(){
+                if(this.$children.length===0){
+                    console&&console.warn&&console.warn('tabs的子组件应该是tabs-head和tabs-body,但你没有写子组件')
+                }
+            },
+            selectTab(){
+                this.$children.forEach((vm)=>{
+                    if (vm.$options.name === 'GuluTabsHead') {
+                        vm.$children.forEach((childVm) => {
+                            if (childVm.name === this.selected && childVm.$options.name === 'GuluTabsItem') {
+
+                                this.eventBus.$emit('update:selected', this.selected, childVm)
+                            }
+                        })
+                    }
+                })
+            }
+        },
+        mounted(){
+            this.checkChildren();
+            this.selectTab()
+        }
+```
+* 因为tabs组件我们修改了代码，然后通过`npm run test`测试发现通过了，就没问题了，**这也是写测试的好处**，就是你修改了代码不需要一个个手动查找问题，手动测试一遍，多麻烦。现在只需要运行测试就知道是否满足要求了。
+* 坏的代码的循环过程就是
+    1. 写代码不写测试
+    2. 发现问题，不敢或者不方便删除原来的代码，就继续增加代码
+    3. 再次发现问题继续增加代码，于是代码变的越来越多。
+* 好的代码的循环过程就是
+    1. 写代码的过程中或者结束后写测试
+    2. 发现问题直接回到原来的代码重新写。
+    3. 因为你可以运行测试，就可以知道，如果通过就没问题了。
+    4. 代码无论怎么修改，**都有测试来保证代码的质量至少不会有很大的问题**。
+#### 开始写CSS代码
+* 
