@@ -624,7 +624,7 @@ var child = node.appendChild(child);
     1. `overflow:hidden`导致bug,于是通过body.appendChild放到body里面,这个思路看起来简单，但是我们需要考虑是否需要增加window.scrollX和window.scrollY的问题。
     2. 多次关闭，重复关闭，点一次关闭会被关闭两次或者多次。通过职责分开管理，document值管外面，popover只管里面。不要交叉管理。
     3. 忘记取消document的监听。每次把visible变成false的时候都得取消这个document上的监听。这个忘记的原因主要是因为代码的结构不太好。通过把所有关闭的东西都收拢到一个方法里面比如close方法。最终就只有五个方法。
-#### 优化比较好的代码一般只有五行代码
+#### 优化比较好的代码一般只有五行代码(这个是老师的推荐的指导准则)
 * 通过检查发现tabs组件里面mounted里面的代码超过了五行。
 ```
         mounted(){
@@ -680,4 +680,55 @@ var child = node.appendChild(child);
     3. 因为你可以运行测试，就可以知道，如果通过就没问题了。
     4. 代码无论怎么修改，**都有测试来保证代码的质量至少不会有很大的问题**。
 #### 开始写CSS代码
-* 
+* 删除部分不需要的样式，使用我们的g-button组件的按钮。当修改为g-button之后，发现**老师的button组件上的代码`vertical-align: middle`,而我的button组件上的代码`vertical-align: top`**,所以我的会显示正常，如果这里写了不是top，那么就会出现问题，因为定位的位置是按照popover组件的`<span ref="triggerWrapper">`定位的,也就是
+```
+        <span ref="triggerWrapper">
+            <slot></slot>
+        </span>
+```
+* 而span的高度只有不到20px，但是g-button的组件的高度有32px，所以就**存在交叉的bug**,解决方法很简单，把这个span变成块级元素即可，也就是写成`display:inline-block`，这样span和button就一样高了.
+```
+        <span ref="triggerWrapper" style="display: inline-block">
+            <slot></slot>
+        </span>
+```
+* 然后让弹出的popover好看一些。这里需要**做一个小三角形**，要用到[calc](https://developer.mozilla.org/zh-CN/docs/Web/CSS/calc)，伪元素[::after](https://developer.mozilla.org/zh-CN/docs/Web/CSS/::after)和[::before](https://developer.mozilla.org/zh-CN/docs/Web/CSS/::before),这样CSS代码就修改为下面：
+```
+<style scoped lang="scss">
+    $border-color:#333;
+    $border-radius:4px;
+    .popover{
+        display: inline-block;
+        vertical-align: top;
+        position:relative;
+    }
+    .content-wrapper{
+        position:absolute;
+        border:1px solid $border-color;
+        border-radius: $border-radius;
+        box-shadow: 0 0 3px rgba(0,0,0,0.5);
+        transform: translateY(-100%);
+        margin-top:-10px;
+        padding:.5em 1em;
+        &::before,&::after{
+            content:'';
+            display: block;
+            border: 10px solid transparent;
+            width:0px;
+            height:0px;
+            position:absolute;
+            top:100%;
+            left:10px;
+        }
+        &::before{
+            border-top-color: black;
+            top:100%;
+        }
+        &::after{
+            border-top-color: white;
+            top:calc(100% - 1px);
+        }
+    }
+</style>
+```
+
