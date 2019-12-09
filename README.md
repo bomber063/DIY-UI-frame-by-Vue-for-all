@@ -731,4 +731,56 @@ var child = node.appendChild(child);
     }
 </style>
 ```
+* **目前还存在bug,如果popover的内容很长。会顶到最右边，显得很长**。**所以最好给一个最大宽度**。当然如果定了宽度，那么会显的很高，所以可以设置为**如果发现容纳不了就自动把button往下面移动，不过这个我没有做，原理不难，主要是获取button到屏幕上面的高度减去弹出popover气泡框的高度就得到了谁大谁小，然后通过控制这个大小来调整button往下移动的距离即可，小了就往下面移动，大了就保持不动**
+```
+    .content-wrapper{
+        max-width: 20em;
+    }
+```
+* 还存在bug,如果是英语单词,那么一个一个单词是不会分开的，那就如果一个很长的单词就会超出弹出popover气泡框。需要设置一个CSS参数让他自动换行。这里用到[word-break](https://developer.mozilla.org/zh-CN/docs/Web/CSS/word-break),一般中文我们就用break-all，如果是英文网站就建议不要使用break-all。
+```
+    .content-wrapper{
+        word-break: break-all;
+    }
+```
+* **老师这里突然发现他写的popover弹出气泡框点击会自动关闭，应该是不能自动关闭的**。因为`contentWrapper`已经从popover组建里面移动到外面的body下面去了.
+    * 这里我的代码是
+    ```
+                onClickDocument(e){
+                    // 这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
+                    //     当this.visible是true的情况下的判断document绑定的事件及元素
+                        if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+                            return
+                        }
+                        if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+                            this.close()
+                            console.log('document监听导致的关闭,如果已经关闭可以忽略')
+                        }
+                        if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+                            document.removeEventListener('click', this.onClickDocument)
+                        }
+                }
+    ```
+    * 老师修改后的代码为
+    ```
+                onClickDocument(e){
+                    //下面是老师修改后的onClickDocument代码
+                        if(this.$refs.popover&&
+                            (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
+                        ){return}
+                    if(this.$refs.contentWrapper &&
+                        (this.$refs.contentWrapper===e.target ||this.$refs.contentWrapper.contains(e.target))
+                    ){return}
+                        this.close()
+    
+                },
+    ```
+    *  我测是了下发现这句话`this.$refs.contentWrapper===e.target ||`不加,并且前面的popover的if判断不加也关系
+    ```
+                onClickDocument(e){
+                        if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){return}
+                        this.close()
+                },
+    ```
+    * 我这里先写成跟老师一样的吧。免得后续出错。
 

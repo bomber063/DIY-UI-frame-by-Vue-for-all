@@ -25,21 +25,31 @@
             onClickDocument(e){
                 // 这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
                 //     当this.visible是true的情况下的判断document绑定的事件及元素
-                    if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
-                        return
-                    }
-                    if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
-                        this.close()
-                        console.log('document监听导致的关闭,如果已经关闭可以忽略')
-                    }
-                    if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
-                        document.removeEventListener('click', this.onClickDocument)
-                    }
+                //     if(this.$refs.contentWrapper && this.$refs.contentWrapper.contains(e.target)){//如果点击的是弹出的气泡框，就什么都不做，并且return，那么就不执行后面的操作.
+                //         return
+                //     }
+                //     if (!(this.$refs.triggerWrapper.contains(e.target))) {//如果点击没有点击button，那么因为前面做了判断，就只能点击popover组件以外的东西，那就是属于document，就切换visible，然后移除绑定事件.
+                //         this.close()
+                //         console.log('document监听导致的关闭,如果已经关闭可以忽略')
+                //     }
+                //     if(this.$refs.triggerWrapper.contains(e.target)&&(this.visible===true)){//如果气泡框弹出的状态并且点击button,那就就只是移除绑定事件,如果没有这一步就会导致多次关闭。
+                //         document.removeEventListener('click', this.onClickDocument)
+                //     }
                 //下面是老师的onClickDocument代码
                 //     if(this.$refs.popover&&
                 //         (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
                 //     ){return}
                 //     this.close()
+                //
+                //下面是老师修改后的onClickDocument代码
+                    if(this.$refs.popover&&
+                        (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
+                    ){return}
+                    if(this.$refs.contentWrapper &&
+                        (this.$refs.contentWrapper===e.target ||this.$refs.contentWrapper.contains(e.target))
+                    ){return}
+                    this.close()
+
             },
             open(){
                 this.visible = true
@@ -85,6 +95,8 @@
         transform: translateY(-100%);
         margin-top:-10px;
         padding:.5em 1em;
+        max-width: 20em;
+        word-break: break-all;
         &::before,&::after{
             content:'';
             display: block;
