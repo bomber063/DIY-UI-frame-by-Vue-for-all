@@ -785,8 +785,8 @@ var child = node.appendChild(child);
     * 我这里先写成跟老师一样的吧。免得后续出错。
 #### 细化这个弹出框三角形的边界
 * 真个popover气泡弹出框是由box-shadow的，但是这个三角形目前还没有box-shadow。
-* 有一个快捷的方式，但是这个方式的兼容性不太好，具体兼容什么版本可以在网站[https://www.caniuse.com/]查询需要把外面的box-shadow去掉。改用[filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter),它用于CSS属性将模糊或颜色偏移等图形效果应用于元素。滤镜通常用于调整图像，背景和边框的渲染。
-    * 其中有一个属性值是**[drop-shadow()](https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function/drop-shadow)**。该CSS功能适用阴影效果输入图像.
+* 有一个快捷的方式，但是这个方式的兼容性不太好，具体兼容什么版本可以在网站[https://www.caniuse.com/](https://www.caniuse.com/)查询需要把外面的box-shadow去掉。改用[filter](https://developer.mozilla.org/zh-CN/docs/Web/CSS/filter),它用于CSS属性将模糊或颜色偏移等图形效果应用于元素。滤镜通常用于调整图像，背景和边框的渲染。
+    * 其中有一个属性值是[drop-shadow()](https://developer.mozilla.org/en-US/docs/Web/CSS/filter-function/drop-shadow)。该CSS功能适用阴影效果输入图像.
     给图像设置一个阴影效果。阴影是合成在图像下面，可以有模糊度的，可以以特定颜色画出的遮罩图的偏移版本。 函数接受<shadow>（在CSS3背景中定义）类型的值，除了“inset”关键字是不允许的。该函数与已有的[box-shadow]()属性很相似；不同之处在于，通过滤镜，一些浏览器为了更好的性能会提供硬件加速。
     * 但是还需要加一个和外面颜色一样的背景，比如外面是白色，我这里就增加一个白色背景.
     ```
