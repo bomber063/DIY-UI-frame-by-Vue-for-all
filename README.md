@@ -796,4 +796,140 @@ var child = node.appendChild(child);
             background:white;
             }
     ```
+#### 四个方向的代码
+* 因为我们的位置是通过JS来控制的，所以只需要调整JS代码即可。
+* 注意这里使用了**属性名使用了表达式，那么作为属性需要加上中括号[]**,根据[ES 6 新特性列表](https://fangyinghang.com/es-6-tutorials/)的[属性名支持表达式——对象属性加强的计算属性名](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Object_initializer#ECMAScript_6%E6%96%B0%E6%A0%87%E8%AE%B0),从ECMAScript 2015开始，对象初始化语法开始支持计算属性名。其允许在[]中放入表达式，计算结果可以当做属性名。
+```
+        <div ref="contentWrapper" class="content-wrapper" v-if="visible"
+        :class="{[`position-${position}`]:true}">
+```
+* 出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+* 增加一个props
+```
+        props:{
+          position:{
+              type:String,
+              default:'top',
+              validator(value){
+                  return ['top','bottom','left','right'].indexOf(value)>=0
+              }
+          }
+        },
+```
+* 改变positionContent的位置
+```
+            positionContent(){
+                const {contentWrapper,triggerWrapper}=this.$refs
+                document.body.appendChild(contentWrapper)
+                let {width, height, left, top,bottom} = triggerWrapper.getBoundingClientRect()
+                if(this.position==='top'){
+                contentWrapper.style.top = top + window.scrollY + 'px'
+                contentWrapper.style.left = left + window.scrollX + 'px'
+                }
+                if(this.position==='bottom'){
+                    contentWrapper.style.top = top + height + window.scrollY + 'px'
+                    contentWrapper.style.left = left + window.scrollX + 'px'
+                }
+                if(this.position==='left'){
+                    //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                    contentWrapper.style.left = left + window.scrollX + 'px'
+                    let {height:height2}=contentWrapper.getBoundingClientRect()
+                    if(height2>height){
+                        contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                    }
+                    if(height2<height){
+                        contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                    }
+                }
+                if(this.position==='right'){
+                    //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                    contentWrapper.style.left = left + width + window.scrollX + 'px'
+                    let {height:height2}=contentWrapper.getBoundingClientRect()
+                    if(height2>height){
+                        contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                    }
+                    if(height2<height){
+                        contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                    }
+                }
+
+            },
+```
+* CSS的类增加了四个方向的控制代码
+```
+        &::before,&::after {
+            content: '';
+            display: block;
+            border: 10px solid transparent;
+            width: 0px;
+            height: 0px;
+            position: absolute;
+        }
+        &.position-top{
+            transform: translateY(-100%);
+            margin-top:-10px;
+            &::before,&::after{
+                left:10px;
+            }
+            &::before{
+                border-top-color: black;
+                top:100%;
+            }
+            &::after{
+                border-top-color: white;
+                top:calc(100% - 1px);
+            }
+        }
+        &.position-bottom{
+            margin-top:10px;
+            &::before,&::after{
+                left:10px;
+            }
+            &::before{
+                border-bottom-color: black;
+                bottom:100%;
+            }
+            &::after{
+                border-bottom-color: white;
+                bottom:calc(100% - 1px);
+            }
+        }
+        &.position-left{
+            transform: translateX(-100%);
+            margin-left:-10px;
+            &::before,&::after{
+                top:50%;
+                transform: translateY(-50%);
+            }
+            &::before{
+                border-left-color: black;
+                left:100%;
+            }
+            &::after{
+                border-left-color: white;
+                left:calc(100% - 1px);
+            }
+        }
+        &.position-right{
+            margin-left:10px;
+            &::before,&::after{
+                top:50%;
+                transform: translateY(-50%);
+            }
+            &::before{
+                border-right-color: black;
+                right:100%;
+            }
+            &::after{
+                border-right-color: white;
+                right:calc(100% - 1px);
+            }
+        }
+```
+* 然后在index.html中就可以写，这里以bottom为例子
+```
+    <g-popover position="bottom">
+    ...
+    </g-popover>
+```
 

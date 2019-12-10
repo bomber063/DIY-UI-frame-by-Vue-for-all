@@ -1,6 +1,7 @@
 <template>
     <div class="popover" @click="onClick" ref="popover">
-        <div ref="contentWrapper" class="content-wrapper" v-if="visible">
+        <div ref="contentWrapper" class="content-wrapper" v-if="visible"
+        :class="{[`position-${position}`]:true}">
             <slot name="content"></slot>
         </div>
         <span ref="triggerWrapper" style="display: inline-block">
@@ -15,12 +16,51 @@
         data(){
           return {visible:false}
         },
+        props:{
+          position:{
+              type:String,
+              default:'top',
+              validator(value){
+                  return ['top','bottom','left','right'].indexOf(value)>=0
+              }
+          }
+        },
         methods: {
             positionContent(){
-                let {width, height, left, top} = this.$refs.triggerWrapper.getBoundingClientRect()
-                this.$refs.contentWrapper.style.top = top + window.scrollY + 'px'
-                this.$refs.contentWrapper.style.left = left + window.scrollX + 'px'
-                document.body.appendChild(this.$refs.contentWrapper)
+                const {contentWrapper,triggerWrapper}=this.$refs
+                document.body.appendChild(contentWrapper)
+                let {width, height, left, top,bottom} = triggerWrapper.getBoundingClientRect()
+                if(this.position==='top'){
+                contentWrapper.style.top = top + window.scrollY + 'px'
+                contentWrapper.style.left = left + window.scrollX + 'px'
+                }
+                if(this.position==='bottom'){
+                    contentWrapper.style.top = top + height + window.scrollY + 'px'
+                    contentWrapper.style.left = left + window.scrollX + 'px'
+                }
+                if(this.position==='left'){
+                    //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                    contentWrapper.style.left = left + window.scrollX + 'px'
+                    let {height:height2}=contentWrapper.getBoundingClientRect()
+                    if(height2>height){
+                        contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                    }
+                    if(height2<height){
+                        contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                    }
+                }
+                if(this.position==='right'){
+                    //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                    contentWrapper.style.left = left + width + window.scrollX + 'px'
+                    let {height:height2}=contentWrapper.getBoundingClientRect()
+                    if(height2>height){
+                        contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                    }
+                    if(height2<height){
+                        contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                    }
+                }
+
             },
             onClickDocument(e){
                 // 这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素
@@ -45,7 +85,7 @@
                     if(this.$refs.popover&&
                         (this.$refs.popover===e.target||this.$refs.popover.contains(e.target))
                     ){return}
-                    if(this.$refs.contentWrapper &&
+                    else if(this.$refs.contentWrapper &&
                         (this.$refs.contentWrapper===e.target ||this.$refs.contentWrapper.contains(e.target))
                     ){return}
                     this.close()
@@ -94,28 +134,76 @@
         /*box-shadow: 0 0 3px rgba(0,0,0,0.5);*/
         filter: drop-shadow(0 1px 1px rgba(0,0,0,0.5));
         background:white;
-        transform: translateY(-100%);
-        margin-top:-10px;
         padding:.5em 1em;
         max-width: 20em;
         word-break: break-all;
-        &::before,&::after{
-            content:'';
+        &::before,&::after {
+            content: '';
             display: block;
             border: 10px solid transparent;
-            width:0px;
-            height:0px;
-            position:absolute;
-            top:100%;
-            left:10px;
+            width: 0px;
+            height: 0px;
+            position: absolute;
         }
-        &::before{
-            border-top-color: black;
-            top:100%;
+        &.position-top{
+            transform: translateY(-100%);
+            margin-top:-10px;
+            &::before,&::after{
+                left:10px;
+            }
+            &::before{
+                border-top-color: black;
+                top:100%;
+            }
+            &::after{
+                border-top-color: white;
+                top:calc(100% - 1px);
+            }
         }
-        &::after{
-            border-top-color: white;
-            top:calc(100% - 1px);
+        &.position-bottom{
+            margin-top:10px;
+            &::before,&::after{
+                left:10px;
+            }
+            &::before{
+                border-bottom-color: black;
+                bottom:100%;
+            }
+            &::after{
+                border-bottom-color: white;
+                bottom:calc(100% - 1px);
+            }
+        }
+        &.position-left{
+            transform: translateX(-100%);
+            margin-left:-10px;
+            &::before,&::after{
+                top:50%;
+                transform: translateY(-50%);
+            }
+            &::before{
+                border-left-color: black;
+                left:100%;
+            }
+            &::after{
+                border-left-color: white;
+                left:calc(100% - 1px);
+            }
+        }
+        &.position-right{
+            margin-left:10px;
+            &::before,&::after{
+                top:50%;
+                transform: translateY(-50%);
+            }
+            &::before{
+                border-right-color: black;
+                right:100%;
+            }
+            &::after{
+                border-right-color: white;
+                right:calc(100% - 1px);
+            }
         }
     }
 </style>
