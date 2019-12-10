@@ -27,40 +27,63 @@
         },
         methods: {
             positionContent(){
-                const {contentWrapper,triggerWrapper}=this.$refs
+                const {contentWrapper,triggerWrapper}=this.$refs;
                 document.body.appendChild(contentWrapper)
-                let {width, height, left, top,bottom} = triggerWrapper.getBoundingClientRect()
-                if(this.position==='top'){
-                contentWrapper.style.top = top + window.scrollY + 'px'
-                contentWrapper.style.left = left + window.scrollX + 'px'
-                }
-                if(this.position==='bottom'){
-                    contentWrapper.style.top = top + height + window.scrollY + 'px'
-                    contentWrapper.style.left = left + window.scrollX + 'px'
-                }
-                if(this.position==='left'){
-                    //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
-                    contentWrapper.style.left = left + window.scrollX + 'px'
-                    let {height:height2}=contentWrapper.getBoundingClientRect()
-                    if(height2>height){
-                        contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                const {width, height, left, top,bottom} = triggerWrapper.getBoundingClientRect();
+                const {height:height2}=contentWrapper.getBoundingClientRect();
+                let positions={
+                    top:{
+                        top:top + window.scrollY,
+                        left:left + window.scrollX
+                    },
+                    bottom:{
+                        top:top + height + window.scrollY,
+                        left:left + window.scrollX
+                    },
+                    left:{
+                        left:left + window.scrollX,
+                        top:height2>height?top - (height2-height)/2 + window.scrollY:top + (height-height2)/2 + window.scrollY,
+                        // top1:top - (height2-height)/2 + window.scrollY,
+                        // top2:top + (height-height2)/2 + window.scrollY
+                    },
+                    right:{
+                        left:left + width + window.scrollX,
+                        top:height2>height?top - (height2-height)/2 + window.scrollY:top + (height-height2)/2 + window.scrollY,
+                        // top1:top - (height2-height)/2 + window.scrollY,
+                        // top2:top + (height-height2)/2 + window.scrollY
                     }
-                    if(height2<height){
-                        contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
-                    }
-                }
-                if(this.position==='right'){
-                    //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
-                    contentWrapper.style.left = left + width + window.scrollX + 'px'
-                    let {height:height2}=contentWrapper.getBoundingClientRect()
-                    if(height2>height){
-                        contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
-                    }
-                    if(height2<height){
-                        contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
-                    }
-                }
+                };
+                contentWrapper.style.top=positions[this.position].top+'px'
+                contentWrapper.style.left=positions[this.position].left+'px'
 
+                // if(this.position==='top'){
+                // contentWrapper.style.top = top + window.scrollY + 'px'
+                // contentWrapper.style.left = left + window.scrollX + 'px'
+                // }
+                // if(this.position==='bottom'){
+                //     contentWrapper.style.top = top + height + window.scrollY + 'px'
+                //     contentWrapper.style.left = left + window.scrollX + 'px'
+                // }
+                // if(this.position==='left'){
+                //     //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                //     contentWrapper.style.left = left + window.scrollX + 'px'
+                //     if(height2>height){
+                //         contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                //     }
+                //     if(height2<height){
+                //         contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                //     }
+                // }
+                // if(this.position==='right'){
+                //     //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                //     contentWrapper.style.left = left + width + window.scrollX + 'px'
+                //     if(height2>height){
+                //         contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                //     }
+                //     if(height2<height){
+                //         contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                //     }
+                // }
             },
             onClickDocument(e){
                 // 这个e是整个document里面的事件，那么e.target就是整个document里面的元素，当然它包括了前面的triggerWrapper所对应的元素

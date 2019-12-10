@@ -932,4 +932,85 @@ var child = node.appendChild(child);
     ...
     </g-popover>
 ```
-
+### 支持click和hover两种方式
+* 首先重构优化一下前面的比较长的代码(主要是positionContent)
+* 这里用到表驱动编程的理念。
+    * 就是`contentWrapper.style.top`和`contentWrapper.style.left`在`this.position`不同的时候对应了不同的值。
+    * 列一个表格左边一列的top和left分别代表`contentWrapper.style.top`和`contentWrapper.style.left`。第一行的left,right,top,bottom代表的是this.position。
+    
+    |              | top   |  bottom  | left  | right  |
+    | :--------:   | :-----:               |         :----:                   | :----:                | :----:                 |
+    | top       | top + window.scrollY     |   top + height + window.scrollY    |(当height2>height)<br>top - (height2-height)/2 + window.scrollY<br> (当height2<height)<br>top + (height-height2)/2 + window.scrollY|(当height2>height)<br>top - (height2-height)/2 + window.scrollY<br>(height2<height)<br>top + (height-height2)/2 + window.scrollY|
+    | left      |   left + window.scrollX  |   left + window.scrollX   | left + window.scrollX | left + width + window.scrollX||
+    * 我们就可以用一个一一对应的对象来代替就好了
+    * 之前的代码是
+    ```
+                positionContent(){
+                    const {contentWrapper,triggerWrapper}=this.$refs;
+                    document.body.appendChild(contentWrapper)
+                    const {width, height, left, top,bottom} = triggerWrapper.getBoundingClientRect();
+                    const {height:height2}=contentWrapper.getBoundingClientRect();
+    
+                    if(this.position==='top'){
+                    contentWrapper.style.top = top + window.scrollY + 'px'
+                    contentWrapper.style.left = left + window.scrollX + 'px'
+                    }
+                    if(this.position==='bottom'){
+                        contentWrapper.style.top = top + height + window.scrollY + 'px'
+                        contentWrapper.style.left = left + window.scrollX + 'px'
+                    }
+                    if(this.position==='left'){
+                        //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                        contentWrapper.style.left = left + window.scrollX + 'px'
+                        if(height2>height){
+                            contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                        }
+                        if(height2<height){
+                            contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                        }
+                    }
+                    if(this.position==='right'){
+                        //出现在左右的时候需要判断button高度和弹出气泡框高度的差，为了让他们居中对齐。
+                        contentWrapper.style.left = left + width + window.scrollX + 'px'
+                        if(height2>height){
+                            contentWrapper.style.top = top - (height2-height)/2 + window.scrollY + 'px'
+                        }
+                        if(height2<height){
+                            contentWrapper.style.top = top + (height-height2)/2 + window.scrollY + 'px'
+                        }
+                    }
+                },
+    ```
+    * 使用表驱动编程优化代码后的代码,之前就是if...else if这样代码，现在就是一个对象列表。top和left直接在表里面去获取。代码的行数可能比没有减少，但是代码的逻辑减少了，因为没有任何if...else。
+    ```
+                positionContent(){
+                    const {contentWrapper,triggerWrapper}=this.$refs;
+                    document.body.appendChild(contentWrapper)
+                    const {width, height, left, top,bottom} = triggerWrapper.getBoundingClientRect();
+                    const {height:height2}=contentWrapper.getBoundingClientRect();
+                    let positions={
+                        top:{
+                            top:top + window.scrollY,
+                            left:left + window.scrollX
+                        },
+                        bottom:{
+                            top:top + height + window.scrollY,
+                            left:left + window.scrollX
+                        },
+                        left:{
+                            left:left + window.scrollX,
+                            top:height2>height?top - (height2-height)/2 + window.scrollY:top + (height-height2)/2 + window.scrollY,
+                            // top1:top - (height2-height)/2 + window.scrollY,
+                            // top2:top + (height-height2)/2 + window.scrollY
+                        },
+                        right:{
+                            left:left + width + window.scrollX,
+                            top:height2>height?top - (height2-height)/2 + window.scrollY:top + (height-height2)/2 + window.scrollY,
+                            // top1:top - (height2-height)/2 + window.scrollY,
+                            // top2:top + (height-height2)/2 + window.scrollY
+                        }
+                    };
+                    contentWrapper.style.top=positions[this.position].top+'px'
+                    contentWrapper.style.left=positions[this.position].left+'px'
+                },
+    ```
