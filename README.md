@@ -1077,3 +1077,19 @@ var child = node.appendChild(child);
 * 另外**注意`this.close()`是调用并执行close函数，而`this.close`只是close这个函数,但是不执行它**。
 
 * 目前**还存在一个bug**就是目前还移不到弹出的气泡框里面去。
+#### 解决移动不到弹出气泡框抖动的bug
+* 因为**我们前面做三角形的时候它的border边框其实是和button这个trigger又重合的地方的。所以当在重合的地方的时候**，就会弹出popover气泡框，也就是切换为`visible:true`,因为整个弹出内容我们移动到body里面去了，移动到弹出的popover气泡框相当于移除了这个按钮，移动到了body的儿子上面。弹出后就马上切换为`visible:false`,然后一直反复出现移出移入这个情况.
+* 我们可以把重合的部分设置为border的none即可.这里以一个为例子。
+```
+            &::before{
+                border-top:none;
+                border-bottom-color: black;
+                bottom:100%;
+            }
+            &::after{
+                border-top:none;
+                border-bottom-color: white;
+                bottom:calc(100% - 1px);
+            }
+```
+* 还存在一个问题就是移动到弹出popover气泡框的时候他是会消失的，前面我们说到最好不要消失。这里可以提供一种思路，就是通过setTimeout延迟来实现。**就是通过移出的时候延迟两秒关闭，然后移入的时候取消掉这个两秒的关闭，这样即使中间有空隙也不会马上关闭，不是立即隐藏，而是延迟隐藏**
