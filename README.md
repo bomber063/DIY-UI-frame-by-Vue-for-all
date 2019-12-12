@@ -933,6 +933,7 @@ var child = node.appendChild(child);
     </g-popover>
 ```
 ### 支持click和hover两种方式
+#### 重构代码
 * 首先重构优化一下前面的比较长的代码(主要是positionContent)
 * 这里用到表驱动编程的理念。
     * 就是`contentWrapper.style.top`和`contentWrapper.style.left`在`this.position`不同的时候对应了不同的值。
@@ -942,7 +943,7 @@ var child = node.appendChild(child);
     | :--------:   | :-----:               |         :----:                   | :----:                | :----:                 |
     | top       | top + window.scrollY     |   top + height + window.scrollY    |(当height2>height)<br>top - (height2-height)/2 + window.scrollY<br> (当height2<height)<br>top + (height-height2)/2 + window.scrollY|(当height2>height)<br>top - (height2-height)/2 + window.scrollY<br>(height2<height)<br>top + (height-height2)/2 + window.scrollY|
     | left      |   left + window.scrollX  |   left + window.scrollX   | left + window.scrollX | left + width + window.scrollX||
-    * 我们就可以用一个一一对应的对象来代替就好了
+    * 我们就可以用一个一一对应的对象来代替就好了.
     * 之前的代码是
     ```
                 positionContent(){
@@ -981,7 +982,7 @@ var child = node.appendChild(child);
                     }
                 },
     ```
-    * 使用表驱动编程优化代码后的代码,之前就是if...else if这样代码，现在就是一个对象列表。top和left直接在表里面去获取。代码的行数可能比没有减少，但是代码的逻辑减少了，因为没有任何if...else。
+    * 使用表驱动编程优化代码后的代码,之前就是if...else if这样代码，现在就是一个对象列表。top和left直接在表里面去获取。代码的行数可能比没有减少，但是代码的逻辑减少了，因为没有任何if...else。其中使用了[条件（三元）运算符](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Operators/Conditional_Operator)
     ```
                 positionContent(){
                     const {contentWrapper,triggerWrapper}=this.$refs;
@@ -1014,3 +1015,65 @@ var child = node.appendChild(child);
                     contentWrapper.style.left=positions[this.position].left+'px'
                 },
     ```
+#### hover和click的需求增加 
+* 增加用户需求，就是选择在hover的时候触发还是click的时候触发.增加trigger的props，并输入默认值和验证。
+```
+        props:{
+          trigger:{
+              type:String,
+              default:'click',
+              validator(value){
+                  return ['click','hover'].indexOf(value)>=0
+              }
+          }
+        },
+```
+* click对应的是open和close，而hover对应的没有点击，只有移入和移出。根据trigger来判断绑定事件的原生名字，这里是计算属性，因为是根据trigger计算出来的。
+```
+        computed:{
+            openEvent(){
+                if(this.trigger==='click'){
+                    return 'click'
+                }
+                else{
+                    return 'mouseenter'
+                }
+            },
+            closeEvent(){
+                if(this.trigger==='click'){
+                    return 'click'
+                }
+                else{
+                    return 'mouseleave'
+                }
+            }
+        },
+```
+* 这里用Vue的模板绑定事件比较麻烦，因为有两个事件，所以我们用mounted里面写js来增加。使用[addEventListener](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/addEventListener)原生绑定事件即可，**但是Vue的模板帮你添加的监听，那么Vue会在destroy的时候自动帮你删除，如果是自己添加的监听就需要自己来删除，这样就不会有任何的内存泄露。**
+```
+        mounted(){
+            if(this.trigger==='click'){
+                this.$refs.popover.addEventListener('click',this.onClick)
+            }
+            else{
+                this.$refs.popover.addEventListener('mouseenter',this.open)
+                this.$refs.popover.addEventListener('mouseleave',this.close)
+            }
+        },
+        destroyed(){
+            if(this.trigger==='click'){
+                this.$refs.popover.removeEventListener('click',this.onClick)
+            }
+            else{
+                this.$refs.popover.removeEventListener('mouseenter',this.open)
+                this.$refs.popover.removeEventListener('mouseleave',this.close)
+            }
+        },
+```
+* 删除这里的`@click="onClick"`
+```
+    <div class="popover" ref="popover">
+```
+* 另外**注意`this.close()`是调用并执行close函数，而`this.close`只是close这个函数,但是不执行它**。
+
+* 目前**还存在一个bug**就是目前还移不到弹出的气泡框里面去。
