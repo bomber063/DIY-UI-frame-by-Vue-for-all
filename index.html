@@ -43,8 +43,11 @@
 <!--        </template>-->
     </g-popover>
     <g-popover position="bottom">
-        <template slot="content">
-            <div>popover内容</div>
+        <template slot="content" slot-scope="{close}">
+<!--            上面的是老版本的写法-->
+<!--        <template v-slot:content="xxx"> 这个是新版本的写法-->
+            <div>popover内容<a href="http://qq.com">看腾讯新闻</a></div>
+            <g-button @click="close">关闭</g-button>
         </template>
         <!--        <template>-->
         <!--            下面的不写slot就是默认slot="default，可以省略掉template"-->
@@ -100,7 +103,7 @@
     </g-popover>
     <g-popover position="right" trigger="hover">
         <template slot="content">
-            <div>popover内容</div>
+            <div>popover<a href="http://qq.com">看腾讯新闻</a>内容</div>
         </template>
         <!--        <template>-->
         <!--            下面的不写slot就是默认slot="default，可以省略掉template"-->

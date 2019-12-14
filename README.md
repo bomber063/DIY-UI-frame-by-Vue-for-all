@@ -1093,3 +1093,68 @@ var child = node.appendChild(child);
             }
 ```
 * 还存在一个问题就是移动到弹出popover气泡框的时候他是会消失的，前面我们说到最好不要消失。这里可以提供一种思路，就是通过setTimeout延迟来实现。**就是通过移出的时候延迟两秒关闭，然后移入的时候取消掉这个两秒的关闭，这样即使中间有空隙也不会马上关闭，不是立即隐藏，而是延迟隐藏**
+#### 弹出的popover气泡框可以显示链接或者按钮
+* 因为我们弹出的popover气泡框用到的是具名slot并用template包裹的，所以都可转换为html。
+```
+        <template slot="content">
+            <div>popover内容<a href="http://qq.com">看腾讯新闻</a></div>
+            <g-button>下载</g-button>
+        </template>
+```
+#### 可以通过点击popover弹出框的关闭按钮来触发close
+* 需要用到[slot-scope（新版本已经废除）](https://cn.vuejs.org/v2/api/#slot-scope-%E5%BA%9F%E5%BC%83)和[带有slot-scope-特性的作用域插槽](https://cn.vuejs.org/v2/guide/components-slots.html#%E5%B8%A6%E6%9C%89-slot-scope-%E7%89%B9%E6%80%A7%E7%9A%84%E4%BD%9C%E7%94%A8%E5%9F%9F%E6%8F%92%E6%A7%BD),在slot标签上面使用slot-scope完成，他就是在组件里面使用v-bind绑定一个变量并赋值一个值，就可以在外面的index.html中通过slot-scope获取到这个标签上的所有信息
+* 新的版本用的是[v-slot](https://cn.vuejs.org/v2/api/#v-slot)
+* 在popover组件的slot里面，这里是具名的slot
+```
+        <div ref="contentWrapper" class="content-wrapper" v-if="visible"
+        :class="{[`position-${position}`]:true}">
+            <slot name="content" :close="close" :bomber="'我的名字'"></slot>
+        </div>
+``` 
+* 两种方法(一种是老版本的已经废除的方法但是还可以用，一种是新的方法)
+    * **老方法。用slot和slot-scope**。在index.html中我们就可以使用slot-scope,把`slot="content"` `slot-scope="xxx"`，这样xxx就代表了popover组件里面拥有名字name为content的这个slot的所有绑定的信息的一个对象。通过`{{xxx}}`就可以获取到这个对象，通过`xxx.close`就可以获取到popover组件里面的close方法,通过`xxx.bomber`就可以获取到bomber这个属性对应的value,xxx这个名字可以自己改成别的合法的名字。
+    ```
+            <template slot="content" slot-scope="xxx">
+                {{xxx}} {{xxx.close}}{{xxx.bomber}}
+                <div>popover内容<a href="http://qq.com">看腾讯新闻</a></div>
+                <g-button>下载</g-button>
+            </template>
+    ```
+    * **新方法只要使用v-slot就可以了**。这里把绑定的slot的名字(content)写到v-slot冒号的后面。
+    ```
+            <template v-slot:content="xxx">
+                {{xxx}} {{xxx.close}}{{xxx.bomber}}
+                <div>popover内容<a href="http://qq.com">看腾讯新闻</a></div>
+                <g-button>下载</g-button>
+            </template>
+    ```
+    * 新老版本写法对比
+    ```
+            <template slot="content" slot-scope="xxx">
+    <!--            上面的是老版本的写法-->
+    <!--        <template v-slot:content="xxx"> 这个是新版本的写法-->
+    ```
+* 当然用`slot-scope`或者`v-slot`获取的**这个对象名字可以不取名，而用析构语法**。然后就可以在传进的这个template里面使用这个close，就点实现点击关闭了
+```
+    <g-popover position="bottom">
+        <template slot="content" slot-scope="{close}">
+<!--            上面的是老版本的写法-->
+<!--        <template v-slot:content="xxx"> 这个是新版本的写法-->
+            <div>popover内容<a href="http://qq.com">看腾讯新闻</a></div>
+            <g-button @click="close">关闭</g-button>
+        </template>
+        <!--        <template>-->
+        <!--            下面的不写slot就是默认slot="default，可以省略掉template"-->
+        <g-button>点我</g-button>
+        <!--        </template>-->
+    </g-popover>
+```
+* 这就是一个很好的把组件内部的东西暴露给插槽的一个方法。
+***
+* 我们在看看[ant.design的popover](https://ant.design/components/popover-cn/)看看还有些啥功能。
+    1. hover之后，没有移出前可以保持不消失
+    2. 点击之后动画弹出
+    3. 支持12个位置方向。我们只有四个位置方向。
+    4. 可以通过点击popover弹出框的关闭按钮来触发close。(这个我们做了)
+    5. 等等
+***
