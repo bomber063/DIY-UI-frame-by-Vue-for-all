@@ -42,4 +42,64 @@ describe('Popover', () => {
             // expect(item.classList.contains('active')).to.be.true
         // })
     });
+    it('可以接受trigger属性,属性为hover',(done)=>{
+        Vue.component('g-popover',Popover)
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        div.innerHTML=`
+    <g-popover trigger="hover" ref="a">
+        <template slot="content">
+            弹出内容
+        </template>
+        <button>点我</button>
+    </g-popover>
+            `
+        let vm=new Vue({
+            el:div
+        });
+        // setTimeout(()=>{
+            let event=new Event('mouseenter',{
+                // 'composed': true,
+                // 'bubbles':true,
+                // 'cancelable': false
+            })
+        vm.$el.querySelector('.popover').dispatchEvent(event);
+        // vm.$el.querySelector('button').dispatchEvent(event)
+        setTimeout(()=>{
+            const {contentWrapper}=vm.$refs.a.$refs;
+            expect(contentWrapper).to.exist
+            done()
+        })
+        // });
+    });
+    it('可以接受trigger属性,属性为click',(done)=>{
+        Vue.component('g-popover',Popover)
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        div.innerHTML=`
+    <g-popover trigger="click" ref="a">
+        <template slot="content">
+            弹出内容
+        </template>
+        <button>点我</button>
+    </g-popover>
+            `
+        let vm=new Vue({
+            el:div
+        });
+        // setTimeout(()=>{
+        let event=new Event('click',{
+            // 'composed': true,
+            'bubbles':true,
+            // 'cancelable': false
+        })
+        vm.$el.querySelector('button').dispatchEvent(event);
+        // vm.$el.querySelector('button').dispatchEvent(event)
+        setTimeout(()=>{
+            const {contentWrapper}=vm.$refs.a.$refs;
+            expect(contentWrapper).to.exist
+            done()
+        })
+        // });
+    });
 })

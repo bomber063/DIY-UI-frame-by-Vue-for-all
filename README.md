@@ -1192,3 +1192,71 @@ var child = node.appendChild(child);
             // expect(item.classList.contains('active')).to.be.true
     });
 ```
+* 可以接受trigger属性。注意这里的[mouseenter事件](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/mouseenter_event)和[mouseleave事件](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/mouseleave_event)是不会冒泡的，但是[click事件](https://developer.mozilla.org/zh-CN/docs/Web/API/Element/click_event)是支持冒泡的,区别请见前面的MDN链接或者其他博客链接——[事件冒泡 以及onmouseenter 、 onmouseover（冒泡） 、onmousemove（冒泡）的区别](https://blog.csdn.net/muzidigbig/article/details/84397119),
+* 所以mouseenter是不支持冒泡(**当然你可以通过new Event让他支持冒泡**)，那么就需要找到这个元素然后**手动触发**,这里就用到[new Event](https://developer.mozilla.org/zh-CN/docs/Web/API/Event/Event)和[dispatchEvent](https://developer.mozilla.org/zh-CN/docs/Web/API/EventTarget/dispatchEvent),以及[创建和触发 events](https://developer.mozilla.org/zh-CN/docs/Web/Guide/Events/Creating_and_triggering_events),这里的new Event可以通过dispatchEvent触发**内置的事件**,比如click,前面的链接中有例子。我自己也做了一个[jsbBin的测试](https://jsbin.com/filubowogu/1/edit?html,js,output)
+* **我是在找到popover这个class上面触发的，但是老师视频里面是直接在vm.$el上触发所以触发不了**。下面是测试可以接受trigger属性,属性为hover
+```
+    it('可以接受trigger属性,属性为hover',(done)=>{
+        Vue.component('g-popover',Popover)
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        div.innerHTML=`
+    <g-popover trigger="hover" ref="a">
+        <template slot="content">
+            弹出内容
+        </template>
+        <button>点我</button>
+    </g-popover>
+            `
+        let vm=new Vue({
+            el:div
+        });
+        // setTimeout(()=>{
+            let event=new Event('mouseenter',{
+                // 'composed': true,
+                // 'bubbles':true,
+                // 'cancelable': false
+            })
+        vm.$el.querySelector('.popover').dispatchEvent(event);
+        // vm.$el.querySelector('button').dispatchEvent(event)
+        setTimeout(()=>{
+            const {contentWrapper}=vm.$refs.a.$refs;
+            expect(contentWrapper).to.exist
+            done()
+        })
+        // });
+    });
+```
+* 下面是可以接受trigger属性,属性为click，需要用到冒泡，也就是`'bubbles':true`,还需要找到的元素的是`button`，不知道是不是因为必须要和click一样，因为click就是点击的是button，并且使有支持冒泡的。
+```
+    it('可以接受trigger属性,属性为click',(done)=>{
+        Vue.component('g-popover',Popover)
+        const div=document.createElement('div');
+        document.body.appendChild(div);
+        div.innerHTML=`
+    <g-popover trigger="click" ref="a">
+        <template slot="content">
+            弹出内容
+        </template>
+        <button>点我</button>
+    </g-popover>
+            `
+        let vm=new Vue({
+            el:div
+        });
+        // setTimeout(()=>{
+        let event=new Event('click',{
+            // 'composed': true,
+            'bubbles':true,
+            // 'cancelable': false
+        })
+        vm.$el.querySelector('button').dispatchEvent(event);
+        // vm.$el.querySelector('button').dispatchEvent(event)
+        setTimeout(()=>{
+            const {contentWrapper}=vm.$refs.a.$refs;
+            expect(contentWrapper).to.exist
+            done()
+        })
+        // });
+    });
+```

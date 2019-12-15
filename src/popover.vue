@@ -167,17 +167,17 @@
             close(){
                 this.visible = false
                 document.removeEventListener('click', this.onClickDocument)
-                console.log('内聚的关闭')
+                // console.log('内聚的关闭')
             },
             onClick(event) {
                 if(this.$refs.triggerWrapper.contains(event.target)){//这个event是整个popover组件里面的事件，那么event.target就是popover组件里面的元素，当然它包括了triggerWrapper所对应的元素
-                    console.log('下面的button被点击')
+                    // console.log('下面的button被点击')
                     if (this.visible === true) {//当前能看见就关闭
                         this.close()
                     }
                     else{//当前不能看见就打开
                         this.open()
-                        console.log('popover组件的关闭')
+                        // console.log('popover组件的关闭')
                     }
                 }
             }
