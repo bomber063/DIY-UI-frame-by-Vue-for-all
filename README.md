@@ -29,7 +29,7 @@ git branch -m old_branch new_branch # Rename branch locally
 git push origin :old_branch # Delete the old branch 
 git push --set-upstream origin new_branch # Push the new branch, set local branch to track the new remote
 ```
-* **注：红色为标注！不需要键入！**
+* **注：#号后面的为标注！不需要键入！**
 * 具体见[文章——git-更改本地和远程分支的名称](https://www.cnblogs.com/wangzhichao/p/git.html)
 * 看Vue官网就好了
 ### 解决前面的toast组件的一个bug
