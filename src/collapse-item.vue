@@ -1,6 +1,6 @@
 <template>
     <div class="collapseItem">
-        <div class="title" @click="open=!open">
+        <div class="title" @click="toggle">
             {{title}}
         </div>
         <div class="content" v-if="open">
@@ -21,6 +21,34 @@
         data(){
             return{
                 open:false
+            }
+        },
+        inject:['eventBus'],
+        mounted() {
+            this.eventBus&&this.eventBus.$on('update:selected',(vm)=>{//这里是eventBus上绑定update:selected这个事件。这里的vm是下面toggle的emit之后传过来的this。
+                    // console.log('vm')
+                    // console.log(vm)
+                    // console.log('this')
+                    // console.log(this)
+                    if(vm!==this){//如果触发的vm不等于本身的this，那么就关闭本身的this。本身有三个this，有一个是vm等于本身的this，另外两个都关闭。
+                        this.close()
+                    }
+                })
+        },
+        methods:{
+            toggle(){//toggle里面的this跟上面mounted的里面的this是不同的
+                if(this.open){
+                    this.open=false
+                    console.log(this)
+                }
+                else{
+                    this.open=true
+                    this.eventBus&&this.eventBus.$emit('update:selected',this)//这里是在eventBus上触发update:selected这个事件。这里的this是触发事件的this，也就是点击了哪个就是哪个,因为这个toggle是前面的@click绑定的事件点击触发后执行的函数
+                    console.log(this)
+                }
+            },
+            close(){
+                this.open=false
             }
         }
     }
