@@ -78,3 +78,92 @@
             this.eventBus&&this.eventBus.$emit('update:selected',this)
 ```
 * 当在index.html上有传single的时候就会有eventBus来实现一个的功能，当没有传single就没有eventBus实现一个的功能。
+#### 用户想默认打开某一项
+* 前面的实现存在的一个问题就是，**单个打开的时候有eventBus，多个打开的时候没有eventBus**，所以这里通知有点麻烦。
+* 另外我们之前选中的是一个this对象，也就是组件，下面把选中修改为name。
+* 我们在父组件上面写上selected选中某一项，然后子组件里面是对应的某一项。
+    * 父组件里面的主要代码
+    ```
+            //声明变量selected
+            props:{
+              selected:{
+                  type:String
+              }
+            },
+            ...
+            //触发这个updata:selected事件，并且传入变量this.selected
+            mounted(){
+                this.eventBus.$emit('update:selected',this.selected)
+            }
+    ```
+    * 子组件里面
+    ```
+            props:{
+                name:{
+                    type:String,
+                    required: true
+                }
+            },
+            ...
+            mounted() {
+                this.eventBus&&this.eventBus.$on('update:selected',(name)=>{
+                        if(name!==this.name){
+                            this.close()
+                        }
+                        else{//如果name===this.name那就打开了，这样如果父组件选中了name，就打开默认打开某一项
+                            this.show()
+                        }
+                    })
+            },
+            methods:{
+                toggle(){//toggle里面的this跟上面mounted的里面的this是不同的
+                    if(this.open){
+                        this.open=false
+                        console.log(this)
+                    }
+                    else{
+                        //为了避免重复打开所以下面的一行代码注释了，不然会导致打开两次
+                        // this.open=true
+                        this.eventBus&&this.eventBus.$emit('update:selected',this.name)//这里是在eventBus上触发update:selected这个事件。这里的this是触发事件的this，也就是点击了哪个就是哪个,因为这个toggle是前面的@click绑定的事件点击触发后执行的函数
+                    }
+                },
+                ...
+                show(){
+                    this.open=true
+                }
+            }
+    ```
+    * index.html代码
+    ```
+    <div id="app" style="padding: 100px;">
+        <g-collapse selected="2">
+            <g-collapse-item title="标题1" name="1">内容1</g-collapse-item>
+            <g-collapse-item title="标题2" name="2">内容2</g-collapse-item>
+            <g-collapse-item title="标题3" name="3">内容3</g-collapse-item>
+        </g-collapse>
+    </div>
+    ```
+#### 设置了默认的selected之后，一旦修改也可以实现
+* 把这个selected变成一个变量即可。
+* 这里继续用到[sync修饰符](https://cn.vuejs.org/v2/guide/components-custom-events.html#sync-%E4%BF%AE%E9%A5%B0%E7%AC%A6),因为它可以接受内部传出来的一个参数，[用$event来代替.内部通过$emit的第二个参数就是这个$event](https://cn.vuejs.org/v2/guide/components.html#%E4%BD%BF%E7%94%A8%E4%BA%8B%E4%BB%B6%E6%8A%9B%E5%87%BA%E4%B8%80%E4%B8%AA%E5%80%BC)
+* 大概思路是:
+    1. 子组件collapse-item的@click触发执行toggle事件，this.open是false的时候会执行eventBus的绑定`this.eventBus&&this.eventBus.$emit('update:selected',this.name)`,这样就把子组件的`this.name`传给父组件collapse
+    2. 父组件collapse通过执行eventBus的绑定继续向外部传，传给index.html。通过`            this.eventBus.$on('update:selected',(name)=>{
+                                                                        this.$emit('update:selected',name)//这个name传出去给了index.html，是用$event来代替的
+                                                                    })`
+    3. 然后index.html通过sync拿到这个name，也就是
+    ```
+        <g-collapse :selected.sync="selectedTab">
+    <!--        下面的代码功能跟上面的是一样的，上面的是缩写-->
+    <!--    <g-collapse :selected="selectedTab" @update:selected="selectedTab=$event">-->
+    ```
+* 老师在父组件collapse里面多写了一行代码，这行代码没有功能，因为它没有触发，触发是在子组件collapse-item，多余的代码是
+```
+        mounted(){
+            // this.eventBus.$emit('update:selected',this.selected)//老师加了这句话，这句话不用写，因为触发的地方在子组件里面的@click触发的
+            this.eventBus.$on('update:selected',(name)=>{
+                this.$emit('update:selected',name)//这个name传出去给了index.html，是用$event来代替的
+            })
+        }
+```
+* **不过目前我们把选择多个的功能暂时删除了**。

@@ -50,7 +50,7 @@ Vue.component('g-collapse-item', CollapseItem)
 new Vue({
     el: '#app',
     data: {
-        selectedTab:'sports'
+        selectedTab:'2'
     },
     created(){
         // setTimeout(()=>{
@@ -66,6 +66,9 @@ new Vue({
         // setInterval(()=>{
         //     this.message=this.message+'1'
         // },1000)
+        // this.eventBus.$on('update:selected',(name)=>{
+        //     this.selectedTab=name
+        // })
 
 
 

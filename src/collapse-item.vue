@@ -16,6 +16,10 @@
             title:{
                 type:String,
                 required:true
+            },
+            name:{
+                type:String,
+                required: true
             }
         },
         data(){
@@ -25,13 +29,16 @@
         },
         inject:['eventBus'],
         mounted() {
-            this.eventBus&&this.eventBus.$on('update:selected',(vm)=>{//这里是eventBus上绑定update:selected这个事件。这里的vm是下面toggle的emit之后传过来的this。
+            this.eventBus&&this.eventBus.$on('update:selected',(name)=>{//这里是eventBus上绑定update:selected这个事件。这里的vm是下面toggle的emit之后传过来的this。
                     // console.log('vm')
                     // console.log(vm)
                     // console.log('this')
                     // console.log(this)
-                    if(vm!==this){//如果触发的vm不等于本身的this，那么就关闭本身的this。本身有三个this，有一个是vm等于本身的this，另外两个都关闭。
+                    if(name!==this.name){//如果触发的vm不等于本身的this，那么就关闭本身的this。本身有三个this，有一个是vm等于本身的this，另外两个都关闭。
                         this.close()
+                    }
+                    else{
+                        this.show()
                     }
                 })
         },
@@ -42,13 +49,17 @@
                     console.log(this)
                 }
                 else{
-                    this.open=true
-                    this.eventBus&&this.eventBus.$emit('update:selected',this)//这里是在eventBus上触发update:selected这个事件。这里的this是触发事件的this，也就是点击了哪个就是哪个,因为这个toggle是前面的@click绑定的事件点击触发后执行的函数
+                    //为了避免重复打开所以下面的一行代码注释了，不然会导致打开两次
+                    // this.open=true
+                    this.eventBus&&this.eventBus.$emit('update:selected',this.name)//这里是在eventBus上触发update:selected这个事件。这里的this是触发事件的this，也就是点击了哪个就是哪个,因为这个toggle是前面的@click绑定的事件点击触发后执行的函数
                     console.log(this)
                 }
             },
             close(){
                 this.open=false
+            },
+            show(){
+                this.open=true
             }
         }
     }
