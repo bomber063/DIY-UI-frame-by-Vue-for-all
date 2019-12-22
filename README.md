@@ -166,4 +166,91 @@
             })
         }
 ```
-* **不过目前我们把选择多个的功能暂时删除了**。
+* **不过目前我们把选择多个的功能暂时删除了**因为一旦选择了多个会让其他的元素自动关闭，所以无法选择多个。也就是这句话,如果把`this.close()`注释掉的思路就可以实现。
+```
+                    if(name!==this.name){//如果触发的vm不等于本身的this，那么就关闭本身的this。本身有三个this，有一个是vm等于本身的this，另外两个都关闭。
+                        this.close()
+                    }
+```
+* 所以我们**可以通过single这边变量的值来改变有没有`this.close()`的操作即可**
+#### 通过this.close的方法实现一个和多个打开
+* 主要的思路是通过把父组件的single值传给子组件的single，然后通过判断single，来确定是否打开`this.close()`的功能
+    1. 首先给子组件collapse-item一个data来声明自己的single变量`        data(){
+                                              return{
+                                                  single:false
+                                              }
+                                          },`
+    2. 在父组件collapse里面，通过forEach循环找到子组件里面的single，并且把父组件collapse的single赋值给子组件collapse-item`            this.$children.forEach((vm)=>{
+                                                                                    vm.single=this.single
+                                                                                })`
+    3. 在子组件collapse-item里面通过判断`                        if(this.single){
+                                                           this.close()
+                                                       }`来确定是否关闭，从而实现了打开多个和只打开一个的功能.
+### 当single为false的时候，多个被打开的情况下选中的值应该是一个数组（前面的代码已经修改了大部分）
+* 这里需要两个事件，一个是数组增加内容的事件，一个是数据减少内容的事件。
+```
+        this.eventBus.$on('update:addSelected',(name)=>{
+            ...
+        })
+        this.eventBus.$on('update:removeSelected',(name)=>{
+            ...
+        })
+```
+* 这里在父组件collapse就需要一个默认的绑定了。
+```
+            this.eventBus.$emit('update:selected',this.selected)//这里是默认的触发，并不需要点击触发。
+```
+* 另外把所有的数据更新都放在一个组件里面，也就是用$on绑定的事件就是更新。也就是增加和减少的更新。这里用到[push](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/push)和[splice](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/Array/splice)
+```
+        this.eventBus.$on('update:addSelected',(name)=>{
+            ...
+        })
+        this.eventBus.$on('update:removeSelected',(name)=>{
+            ...
+        })
+```
+* 这里最开始是子组件需要传值给父组件，父组件通过修改信息后通知到外面的index.html，并且把修改后的值通知给子组件。子组件在进行关闭和打开。
+* 子组件的single就这个变量就不需要了，因为这个的控制权交给父组件来处理。父组件针对只要是single的只需要把原来的数组里面的值清空(也就是赋值为空数组)，然后赋值最新的值就好了。
+```
+        if(this.single){
+            selectedCopy=[name];
+        }
+        else{
+            selectedCopy.push(name)
+        }
+        //下面的代码就可以注释掉了
+        // this.$children.forEach((vm)=>{
+        //     vm.single=this.single
+        // })
+```
+* 然后这里还用到深拷贝，就是先[JSON.stringify](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/stringify),然后再[JSON.parse](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/JSON/parse),**因为不要直接修改props数据里面的selected**
+```
+        let selectedCopy=JSON.parse(JSON.stringify(this.selected));
+```
+* 目前实现的大概思路就是
+    1. 默认情况下的事件绑定，也就是没有点击事件(@click)触发的情况下是在父组件上面写上这个绑定事件触发`            this.eventBus.$emit('update:selected',this.selected)//这里是默认的触发，并不需要点击触发。`
+    2. 如果增加打开的信息，肯定是触发了点击事件(@click),在子组件collapse-item里面触发点击事件，然后通过子组件collapse-item的toggle()里面的代码执行关闭并触发增加事件`this.eventBus&&this.eventBus.$emit('update:removeSelected',this.name)`，执行打开并触发减少事件`this.eventBus&&this.eventBus.$emit('update:addSelected',this.name)`,这个事件的导致的数据更新是放在父组件collapse里面。
+    3. 父组件collapse里面通过增加事件来执行单个和多个情况下的更新，并且把这个更新传出去给index.html以便获取到打开及关闭的是哪一项或多项，以及传给子组件collapse-item的`this.eventBus&&this.eventBus.$on('update:selected',(names)=>{})`以便实现打开及关闭功能。在减少事件执行的更新里面没有单个及多个的考虑，并且这里为了防止改变props的selected，使用了深拷贝`JSON.parse(JSON.stringify(this.selected))`部分代码如下：
+    ```
+        this.eventBus.$on('update:addSelected',(name)=>{
+            let selectedCopy=JSON.parse(JSON.stringify(this.selected));
+            if(this.single){
+                selectedCopy=[name];
+            }
+            else{
+                selectedCopy.push(name)
+            }
+            this.$emit('update:selected',selectedCopy)//这个name传出去给了index.html，是用$event来代替的
+            this.eventBus.$emit('update:selected',selectedCopy)//这里当触发增加事件的时候通知eventBus，并传值
+        })
+        this.eventBus.$on('update:removeSelected',(name)=>{
+            let selectedCopy=JSON.parse(JSON.stringify(this.selected));
+
+            let index=selectedCopy.indexOf(name)
+            selectedCopy.splice(index,1)
+            this.$emit('update:selected',selectedCopy)//这个name传出去给了index.html，是用$event来代替的
+            this.eventBus.$emit('update:selected',selectedCopy)//这里当触发减少事件的时候通知eventBus，并传值
+        })
+    ```
+* 这样就实现了子组件代码只是**通知**父组件更新，而父组件的代码里面**存在数据更新的信息，并把更新后的数据通知给子组件和外界index.html**，index.html就可以拿到更新的数据，子组件也可以根据更新的数据选择打开及关闭的功能。
+* 不要出现两个组件或多个组件互相让对方更新，会导致比较混乱。

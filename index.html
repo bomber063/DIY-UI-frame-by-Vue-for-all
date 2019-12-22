@@ -32,7 +32,7 @@
 </head>
 <body>
 <div id="app" style="padding: 100px;">
-    <g-collapse :selected.sync="selectedTab">
+    <g-collapse single :selected.sync="selectedTab">
 <!--        下面的代码功能跟上面的是一样的，上面的是缩写-->
 <!--    <g-collapse :selected="selectedTab" @update:selected="selectedTab=$event">-->
         <g-collapse-item title="标题1" name="1">内容1</g-collapse-item>
