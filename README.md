@@ -56,5 +56,78 @@
     1. 所有信息文档化。离职的时候可以把文档发给交接工作的人就可以离职了。
     2. 被观查感，为了离职后别人看自己的代码不要太难看。也就是尽量做到严格要求自己。
     3. 在团队中表现优异的感觉。就是要在走前给团队做出贡献，不然走的时候是一个平平无奇的人，就非常不好。让自己有一种紧迫感。
-### 只制作自己的官网
+### 制作自己的初步官网
+* 使用[vuePress](https://vuepress.vuejs.org/zh/),我这里不做全局安装，只做本地安装。如果多个人合作的话，别人可能就不知道你安装了哪些依赖。比如我就通过
+```
+npm i -D vuepress
+```
+* 我安装完了之后显示的版本是`vuepress@1.2.0`,老师的版本是` vuepress@0.13.1`
+* 然后新建一个文件夹
+```
+# 新建一个 docs 文件夹
+mkdir docs
+```
+* 然后写一些内容到docs文件夹里面去,老的文档下面用的是双引号，可能会不执行说引号没有关闭。需要修改为单引号。因为有些bash比较特殊，它会把#号认为是一个注释。如果用单引号就不是注释。
+```
+# 新建一个 markdown 文件
+echo '# Hello VuePress!' > docs/README.md
+```
+* 开始写作
+```
+# 开始写作
+npx vuepress dev docs
+```
+* 这里出现了一个矛盾
+* 就是我的vue-server-renderer和vue版本不一致，最后我都修改为2.6.10版本
+```
+npm i vue-server-renderer@2.6.10
+```
+* 接着继续，在 package.json 里加一些脚本:
+```
+{
+  "scripts": {
+    "docs:dev": "vuepress dev docs",
+    "docs:build": "vuepress build docs"
+  }
+}
+```
+* 然后就可以开始写作了:
+```
+yarn docs:dev # 或者：npm run docs:dev
+```
+* 要生成静态的 HTML 文件，运行：
+```
+yarn docs:build # 或者：npm run docs:build
+```
+* 这里通过运行`npm run docs:dev`后，用ctrl+c关闭不了，需要通过ctrl+alt+delete关闭进程才可以。
+* 然后我们跳到[基本配置](https://vuepress.vuejs.org/zh/guide/basic-config.html#%E9%85%8D%E7%BD%AE%E6%96%87%E4%BB%B6)
+* 在window里面的文档文件是README.md，在linux系统里面文档文件是window.md，在IOS系统里面文档文件是macOS.md
+* 接着创建在vuepress目录里面创建config.js文件。内容为
+```
+module.exports = {
+  title: 'Hello VuePress',
+  description: 'Just playing around'
+}
+```
+* 接下来在[默认主题配置里面找到侧边栏](https://vuepress.vuejs.org/zh/theme/default-theme-config.html#%E4%BE%A7%E8%BE%B9%E6%A0%8F)
+* 然后[分组可以显示二级侧边栏](https://vuepress.vuejs.org/zh/theme/default-theme-config.html#%E4%BE%A7%E8%BE%B9%E6%A0%8F%E5%88%86%E7%BB%84)
+```
+    themeConfig: {
+        sidebar: [
+            '/',
+            //这里的install目录所以需要加斜杆。
+            {
+                title: '入门',
+                children: [             '/install/',
+                    // ['/get-started/','Explicit link text'],
+                    //上面这句话是把/get-started/路径，但是名字按照Explicit link text显示
+                    '/get-started/', ]
+            },
+            {
+                title: '组件',
+                children: [ '/components/button' ]
+            },
+        ]
+    }
+```
 
