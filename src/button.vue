@@ -5,7 +5,7 @@
 <!--            </svg>-->
             <g-icon v-if="loadings" :name=String("loading") class="loading-css icon"></g-icon>
             <g-icon class="icon" v-if="icon&&!loadings" :name="icon"></g-icon>
-            <div class="content">
+            <div class="g-button-content">
                 <slot></slot>
             </div>
         </button>
@@ -35,22 +35,35 @@
     }
 </script>
 <style lang="scss" scoped>
+    $border-radius:4px;
+    $border-color:#999;
+    $button-bg: white;
+    $button-active-bg: #eee;
+    $color:#333;
+    $border-color-hover:#666;
+    $font-size: 14px;
+    $button-height:32px;
     .g-button{
         vertical-align: top;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        font-size: var(--font-size);
-        height:var(--button-height);
         padding: 0 1em;
-        border-radius:var(--border-radius);
-        border:1px solid var(--border-color);
-        background: var(--button-bg);
+        font-size: $font-size;
+        height:$button-height;
+        border-radius: $border-radius;
+        border:1px solid $border-color;
+        background: $button-bg;
+        /*font-size: var(--font-size);*/
+        /*height:var(--button-height);*/
+        /*border-radius:var(--border-radius);*/
+        /*border:1px solid var(--border-color);*/
+        /*background: var(--button-bg);*/
         &:hover{
-            border-color: var(--border-color-hover);
+            border-color: $border-color-hover;
         }
         &:active{
-            background: var(--button-active-bg);
+            background: $button-active-bg;
         }
         &:focus{
             outline: none;//这里是不显示默认蓝色的边框，后续在加focus的样式
@@ -61,7 +74,7 @@
             /*fill: currentColor;*/
             /*overflow: hidden;*/
         }
-        & .content{
+        & .g-button-content{
             order:2;
         }
         &.icon-right{
@@ -70,7 +83,7 @@
                 margin-left:.1em;
                 margin-right:0;
             }
-            & .content{
+            & .g-button-content{
                 order:1;
             }
         }
