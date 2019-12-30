@@ -3,7 +3,7 @@
 <!--            <svg v-if="icon" class="icon" >-->
 <!--                <use :xlink:href="`#i-${icon}`"></use>-->
 <!--            </svg>-->
-            <g-icon v-if="loadings" :name=String("loading") class="loading-css icon"></g-icon>
+            <g-icon v-if="loadings" :name="String('loading')" class="loading-css icon"></g-icon>
             <g-icon class="icon" v-if="icon&&!loadings" :name="icon"></g-icon>
             <div class="g-button-content">
                 <slot></slot>

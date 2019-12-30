@@ -134,5 +134,26 @@ module.exports = {
 #### 先把button组件的HTML变量修改为SASS变量
 * 为了引入之后可以使用变量，把HTML 变量修改为SASS变量
 #### 增加组件代码
+* [在 Markdown 中 使用 Vue](https://vuepress.vuejs.org/zh/guide/using-vue.html#%E5%9C%A8-markdown-%E4%B8%AD-%E4%BD%BF%E7%94%A8-vue)
+* [使用组件](https://vuepress.vuejs.org/zh/guide/using-vue.html#%E4%BD%BF%E7%94%A8%E7%BB%84%E4%BB%B6)
+* 所有在 .vuepress/components 中找到的 *.vue 文件将会自动地被注册为全局的异步组件
+***
+* 这里我发现一个问题就是**没有安装sass-loader会不显示**，于是我安装了。一直不显示的这个bug我找了好久才发现。主要是通过比对老师的package.json内容发现我没有安装sass-loader，并通过安装sass-loader解决了。
+```
+$ npm i -D sass-loader
+```
+* 我安装完后显示的版本是`sass-loader@8.0.0`
+* 另外发现button组件这里有一个错误，就是`:name="String('loading')"`，最外面还需要一个双引号。没有最外面的双引号还是会显示错误。
+```
+            <g-icon v-if="loadings" :name="String('loading')" class="loading-css icon"></g-icon>
+
+```
+* 还有另外一个问题，就是组件下面的Button一直不显示,也就是`title:Button`。最后自己突然间就好了。
+```
+title: Button
+sidebarDepth: 2
+```
+***
+* 
 
 
