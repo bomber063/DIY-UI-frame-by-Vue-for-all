@@ -138,6 +138,7 @@ module.exports = {
 * [使用组件](https://vuepress.vuejs.org/zh/guide/using-vue.html#%E4%BD%BF%E7%94%A8%E7%BB%84%E4%BB%B6)
 * 所有在 .vuepress/components 中找到的 *.vue 文件将会自动地被注册为全局的异步组件
 ***
+##### 解决的bug1,没有安装sass-loader
 * 这里我发现一个问题就是**没有安装sass-loader会不显示**，于是我安装了。一直不显示的这个bug我找了好久才发现。主要是通过比对老师的package.json内容发现我没有安装sass-loader，并通过安装sass-loader解决了。
 ```
 $ npm i -D sass-loader
@@ -154,6 +155,195 @@ title: Button
 sidebarDepth: 2
 ```
 ***
-* 
+* 把显示的效果的代码列在对应的组件下面用[code标签](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/code),并结合用[pre标签](https://developer.mozilla.org/zh-CN/docs/Web/HTML/Element/pre),具体区别可以查看[code和pre竟然有区别！！！！](https://www.cnblogs.com/can-i-do/p/8497131.html).
+##### 解决的bug2,用到ClientOnly
+* 接着为了部署一个网站给别人观看，需要`"docs:build": "vuepress build docs"`,也就是
+```
+npm run docs:build
+```
+* 但是运行会报错如下
+```
+Rendering page: /components/button.html[Vue warn]: Failed to resolve async component: () => __webpack_require__.e(/* import() */ 2).then(__webpack_require__.bind(null, 210))
+Reason: ReferenceError: window is not defined
+error Error rendering /components/button.html: false
+undefined
+Error: render function or template not defined in component: button-demos
+    at normalizeRender (D:\jirengu\github收集\gulu-demo-for-all\node_modules\vue-server-renderer\build.dev.js:8247:13)
+    at renderComponentInner (D:\jirengu\github收集\gulu-demo-for-all\node_modules\vue-server-renderer\build.dev.js:8397:3)
+    at renderComponent (D:\jirengu\github收集\gulu-demo-for-all\node_modules\vue-server-renderer\build.dev.js:8368:5)
+    at resolve (D:\jirengu\github收集\gulu-demo-for-all\node_modules\vue-server-renderer\build.dev.js:8436:9)
+npm ERR! code ELIFECYCLE
+npm ERR! errno 1
+npm ERR! gulu-bomber-1-1@0.0.3 docs:build: `vuepress build docs`
+npm ERR! Exit status 1
+npm ERR!
+npm ERR! Failed at the gulu-bomber-1-1@0.0.3 docs:build script.
+npm ERR! This is probably not a problem with npm. There is likely additional logging output above.
+```
+* 我把下面代码注释掉就可以不报错了
+```
+    //import Button from '../../../src/button'
+
+    export default {
+        components:{
+            // gButton:Button
+            // 'g-button':Button
+        },
+```
+* 这个报错出现在vue-server-renderer,并不是平常使用的Vue的浏览器的方法，是不是因为这个组件是浏览器的方法，但是它这里用到的是vue-server-renderer方法来renderer。
+* 通过google查询这个error，发现[Custom component vuepress CLI build error: render function or template not defined in component #844](https://github.com/vuejs/vuepress/issues/844)解决方案。
+* 并且在[vuePress文档中也有响应的说明——浏览器的API访问限制](https://vuepress.vuejs.org/zh/guide/using-vue.html#%E6%B5%8F%E8%A7%88%E5%99%A8%E7%9A%84-api-%E8%AE%BF%E9%97%AE%E9%99%90%E5%88%B6),这里说到**简而言之，请确保只在beforeMount或者mounted访问浏览器/ DOM的API。**很有可能没有在这个期间方位这个DOM的API。
+* SSR (Server-Side Rendered) ，文档还说了，如果您正在使用，或者需要展示一个关于SSR的方法，那么您可以将其封装在内置的`<ClientOnly>`组件中
+* 因为报错信息显示在button-demos这个组件报错。有可能是还没进入到这个组件就报错了。
+```
+Error: render function or template not defined in component: button-demos
+```
+* 所以需要放到button.md的这个组件的最外面,也就是进入button-demos这个组件的外面。就可以正常运行`npm run docs:build`了.
+```
+    <ClientOnly>
+<button-demos></button-demos>
+    </ClientOnly>
+```
+* 小结解决该问题的过程
+    1. google
+    2. 删除代码再测试
+    3. 得到能够用的版本后增加代码，没加一些代码运行一次，知道从不报错到报错位置就知道哪行代码导致的bug报错。
+    4. 发现问题在import Button这里
+    5. 在vuePress文档里面看到，请确保只在beforeMount或者mounted访问浏览器/ DOM的API。如果在之外的钩子里面访问这些DOM的API会被限制，但是可以通过增加代码解决。比如您正在使用，或者需要展示一个关于SSR的方法，那么您可以将其封装在内置的<ClientOnly>组件中
+* 运行`npm run docs:build`之后你就可以在下面目录会产生一个index.html文件啦
+```
+success Generated static files in docs\.vuepress\dist.
+```
+### 接下来github页面部署
+* [部署](https://vuepress.vuejs.org/zh/guide/deploy.html#%E9%83%A8%E7%BD%B2)
+* 首先VuePress以本地依赖的形式被安装到你的项目中，并且配置了如下的npm脚本：
+```
+{
+  "scripts": {
+    "docs:build": "vuepress build docs"
+  }
+}
+```
+* 增加base
+    * 在`docs/.vuepress/config.js`中设置正确的base。
+    * 如果你打算发布到`https://<USERNAME>.github.io/`，则可以省略这一步，因为交替base即是`"/"`。
+    * 如果您打算发布到`https://<USERNAME>.github.io/<REPO>/`（确实你的仓库在`https://github.com/<USERNAME>/<REPO>`），则将base设置为`"/<REPO>/"`。
+* 我的base仓库名字是DIY-UI-frame-by-Vue-for-all,所以增加为
+```
+    base:'/DIY-UI-frame-by-Vue-for-all/',
+```
+* 接着你的项目中，创建一个如下的deploy.sh文件（请自行判断有仓库名字和没仓库名字的选择其中一个，注释另一个）：
+```
+#!/usr/bin/env sh
+
+# 确保脚本抛出遇到的错误
+set -e
+
+# 生成静态文件
+npm run docs:build
+
+# 进入生成的文件夹
+cd docs/.vuepress/dist
+
+# 如果是发布到自定义域名
+# echo 'www.example.com' > CNAME
+
+git init
+git add -A
+git commit -m 'deploy'
+
+# 如果发布到 https://<USERNAME>.github.io
+# git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
+
+# 如果发布到 https://<USERNAME>.github.io/<REPO>
+# git push -f git@github.com:<USERNAME>/<REPO>.git master:gh-pages
+
+cd -
+```
+* 我的用户名是bomber063，仓库名字为DIY-UI-frame-by-Vue-for-all，我直接修改为如下,
+```
+# 如果发布到 https://<USERNAME>.github.io
+# git push -f git@github.com:<USERNAME>/<USERNAME>.github.io.git master
+
+# 如果发布到 https://<USERNAME>.github.io/<REPO>
+git push -f git@github.com:bomber063/DIY-UI-frame-by-Vue-for-all.git master:gh-pages
+```
+* 如果是window用户可以直接运行了，如果是IOS苹果用户需要运行一个可行执行权限的命令如下,+x就是增加可执行权限的意思。
+```
+chmod +x deploy.sh
+```
+* 然后运行下面命令即可
+```
+./deploy.sh
+```
+* 然后会创建一个新的分支，名字为gh-pages
+```
+ * [new branch]      master -> gh-pages
+```
+* 然后你就可以在你的仓库里面点击settings，在GitHub Pages里面选中对应的gh-pages分支，就可以显示出预览页面了。
+* 另外你运行下面命令后产生的目录变成了`http://localhost:8080/DIY-UI-frame-by-Vue-for-all/`
+```
+npx vuepress dev docs
+```
+### 补充其他组件及消除展示代码空隙
+* 我们在目录`doc/componets/`里面运行下面命令创建其他组件
+```
+ touch input.md grid.md layout.md popover.md tabs.md toast.md
+```
+* 接着在config.js里面创建对应的路径
+```
+    {
+        title: '组件',
+        children: [
+            '/components/button',
+            '/components/grid',
+            '/components/input',
+            '/components/layout',
+            '/components/popover',
+            '/components/tabs',
+            '/components/toast',
+        ]
+    },
+```
+* 消除展示代码空隙,用[replace](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/replace)结合[正则的方法](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Guide/Regular_Expressions)
+* 比如， /Chapter (\d+)\.\d*/ 解释了额外转义的和特殊的字符，并说明了这部分pattern应该被记忆。它精确地匹配后面跟着一个以上数字字符的字符 'Chapter ' (**\d 意为任何数字字符，+ 意为1次以上**)，跟着一个小数点（在这个字符中本身也是一个特殊字符；小数点前的 \ 意味着这个pattern必须寻找字面字符 '.')，跟着任何数字字符0次以上。 (\d 意为数字字符， * 意为0次以上)。另外，插入语也用来记忆第一个匹配的数字字符。
+  
+  此模式可以匹配字符串"Open Chapter 4.3, paragraph 6"，并且'4'将会被记住。此模式并不能匹配"Chapter 3 and 4"，因为在这个字符串中'3'的后面没有点号'.'。
+  
+  括号中的"?:"，这种模式匹配的子字符串将不会被记住。比如，(?:\d+)匹配一次或多次数字字符，但是不能记住匹配的字符。      
+* \d	
+  * 匹配一个数字。等价于[0-9]。
+  * 例如， /\d/ 或者 /[0-9]/ 匹配"B2 is the suite number."中的'2'。
+* 正则表达式有四个可选参数进行全局和不分大小写搜索。这些参数既可以单独使用也可以一起使用在任何顺序和包含正则表达式的部分中。比如g代表全局搜索。
+* 用到[trim](https://developer.mozilla.org/zh-CN/docs/Web/JavaScript/Reference/Global_Objects/String/Trim)，trim() 方法会从一个字符串的两端删除空白字符。在这个上下文中的空白字符是所有的空白字符 (space, tab, no-break space 等) 以及所有行终止符字符（如 LF，CR等）。
+* \t	
+    * 匹配一个水平制表符 (U+0009)。也就是Tab键产生的符号。
+* ^	
+    * 匹配输入的开始。如果多行标志被设置为 true，那么也匹配换行符后紧跟的位置。
+  
+    * 例如，/^A/ 并不会匹配 "an A" 中的 'A'，但是会匹配 "An E" 中的 'A'。
+  
+    * 当 '^' 作为第一个字符出现在一个字符集合模式时，它将会有不同的含义。反向字符集合 一节有详细介绍和示例。
+* \s	
+    * 匹配一个空白字符，包括空格、制表符、换页符和换行符。等价于[ \f\n\r\t\v\u00a0\u1680\u180e\u2000-\u200a\u2028\u2029\u202f\u205f\u3000\ufeff]。
+  
+    * 例如, /\s\w*/ 匹配"foo bar."中的' bar'。
+* button-demos.vue代码修改及增加部分
+```
+        <pre><code>{{content}}</code></pre>
+...
+        data() {
+            return {
+                content: `
+                <g-button>默认按钮</g-button>
+                <g-button icon="setting">默认按钮</g-button>
+                <g-button :loadings="true">默认按钮</g-button>
+                <g-button disabled >默认按钮</g-button>
+            `.replace(/\t+| +/g, '').trim()
+            }
+        }
+```
+
+
 
 
