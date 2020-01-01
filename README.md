@@ -343,7 +343,17 @@ npx vuepress dev docs
             }
         }
 ```
-
+* 每次修改之后需要运行一下下面命令更新和部署github页面的分支信息。
+```
+./deploy.sh
+```
+### 如果需要放到其他的仓库
+* 可以把`/docs/.vuepress/dist/`目录下面的内容拷贝过去即可，还需要注意修改config.js里面的base。
+### 最后再次借用饥人谷的图片总结
+* 第一部分内容就是各个轮子的总结
+* ![图片](https://static.xiedaimala.com/xdml/image/3ac7c224-c23d-491f-84b5-4fabfbeab9b8/2018-8-11-1-50-36.png)
+* 第二部分内容就是用[vuePress](https://vuepress.vuejs.org/zh/)把我们的文档不仅本地可以搭建，而且可以放在远程仓库搭建起来。这个其实react也有响应的搭建的东西(名字具体不记得了)。是react先出，然后Vue觉得不错，就自己也出了一套vuePress。
+* 第三部分就是解决前面几次BUG的过程了。
 
 
 
