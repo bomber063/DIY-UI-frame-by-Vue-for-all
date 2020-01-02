@@ -40,6 +40,16 @@
         <g-collapse-item title="标题3" name="3">内容3</g-collapse-item>
     </g-collapse>
     {{selectedTab}}
+
+
+    <div class="box">
+        <g-input valuea="王五" errora="姓名不能少于两个字"></g-input>
+        <g-input valuea="王五" @changea="inputChange"></g-input>
+        <!--    <g-input v-model="message"></g-input>-->
+        <g-input :valuea="message" @inputa="message=$event"></g-input>
+        <button @click="message=message+1">+1</button>
+        <span>{{message}}</span>
+    </div>
 </div>
 <script src="./src/app.js"></script>
 </body>

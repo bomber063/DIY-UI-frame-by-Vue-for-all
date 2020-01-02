@@ -1,5 +1,5 @@
 <template>
-    <div class="tabs-head">
+    <div class="tabs-head" ref="head">
 <!--        如果这里不用slot插槽，会被Vue自动删除-->
         <slot></slot>
 <!--        所有的tabs-item的会出现在上面,其他的插槽会出现在下面-->
@@ -18,9 +18,13 @@
             // console.log(this.eventBus)
             // this.$emit('update:selected','我是this.$emit触发的事件出来的数据')
             this.eventBus.$on('update:selected',(name,vm)=> {
+                //left是点击的item组件的距离视口左边的距离
                 let {width,height,top,left}=vm.$el.getBoundingClientRect();
+                //left2是head组件距离视口左边的距离
+                let {left: left2} = this.$refs.head.getBoundingClientRect()
                 this.$refs.line.style.width=`${width}px`;
-                this.$refs.line.style.left=`${left}px`;
+                //item在head里面，那么肯定是item距离左边视口要大，这部分大的就是多余的，减去这部分多余的就符合了距离要求了
+                this.$refs.line.style.left=`${left-left2}px`;
             })
         }
     }
