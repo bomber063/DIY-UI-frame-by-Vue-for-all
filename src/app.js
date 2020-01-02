@@ -50,7 +50,8 @@ Vue.component('g-collapse-item', CollapseItem)
 new Vue({
     el: '#app',
     data: {
-        selectedTab:['2','1']
+        selectedTab:['2','1'],
+        message:'hi',
     },
     created(){
         // setTimeout(()=>{
@@ -75,6 +76,9 @@ new Vue({
 
     },
     methods:{
+            inputChange(e) {
+                console.log(e)
+        },
         yyy(){
           console.log('yyy')
         },
