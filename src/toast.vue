@@ -1,5 +1,6 @@
 <template>
-    <div class="wrapper" :class="toastClasses">
+<!--    <div class="wrapper" :class="toastClasses">-->
+    <div class="gulu-toast" :class="toastClasses">
         <div class="toast" ref="toast" >
             <div class="message">
                 <!--        如果没有enableHtml，就用 slot-->
@@ -8,7 +9,7 @@
                 <div v-if="enableHtml" v-html="$slots.default"></div>
             </div>
             <!--        因为在plugin.js里面传入参数的时候就是toast.$slots.default=message-->
-            <div class="line" ref="line"></div>
+            <div class="line" ref="line" v-if="closeButton"></div>
             <span class="close" v-if="closeButton" @click="onClickClose">
             {{closeButton.text}}
         </span>
@@ -126,7 +127,7 @@
             transform:translateY(0%)
         }
     }
-    .wrapper{
+    .gulu-toast{
         left:50%;
         position:fixed;
         &.position-top{

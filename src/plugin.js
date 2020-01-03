@@ -3,7 +3,7 @@ import Toast from './toast'
 
 
 //helpers
-function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构赋值，把
+function createToast({Vue,message,propsData,onClose}){//这里是ES6语法析构赋值，这里的四个参数的传入是下面的function传进来的
     let Constructor=Vue.extend(Toast)
     let toast=new Constructor({
         propsData//这里是ES6语法析构赋值，如果key和value名字一样就可简写

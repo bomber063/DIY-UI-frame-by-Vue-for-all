@@ -49,6 +49,121 @@
 ### layout组件
 * 这个好像没有特别说明的.
 
+### toast组件
+* 这个组件我写了一段时间了，现在看起来还有点费劲。它本身是通过结果button组件，点击之后弹出的一个框。
+* 这个组件通过电泳插件Vue.use(plugin)。
+* plugin.js里面
+    1. 我们没有import vue ,这个vue是外面的app.js通过Vue.use(plugin)传进来的，Vue.js 的插件应该暴露一个 install 方法。这个方法的第一个参数是 Vue 构造器，第二个参数是一个可选的选项对象
+    2. Vue.js 的插件应该暴露一个 install 方法。这个方法的第一个参数是 Vue 构造器，第二个参数是一个可选的选项对象，然后外面的app.js里面就可以通过Vue.use(plugin)使用它           
+        ```
+        install(Vue,options){//这个是安装
+                   Vue.prototype.$toast=function(message,toastOptions){//原型上面定义了一个$toast方法,toastOptions是一个可选参数，里面很多值都是在app.js里面传进来
+        ```
+    3. 有一个函数createToast，它有四个参数，通过它下面的`Vue.prototype.$toast=function(message,toastOptions)`传进来。这个toastOptions是一个可选参数。
+    4. 这个function会调用前面的函数createToast。然后传入这四个参数。Vue,message,propsData,onClose。
+    5. 其中propsData参数通过plugin.js里面可以看到就是toastOptions
+        ```
+                propsData:toastOptions,
+        ```
+    6. 这个toastOptions是通过app.js里面的showToast(position)传过来
+        ```
+                showToast(position){
+                    this.$toast(`你的智商为${parseInt(Math.random()*100)}需要充值！`,{
+                        closeButton: {
+                            text: '已充值',
+                            callback() {
+                                console.log('他说已经充值智商了')
+                            }
+                        },
+                        autoClose:3,
+                        // autoCloseDelay:3,
+                        enableHtml: false,
+                        position
+                    })
+                }
+        ```
+        
+    7. 也就是说只需要写上button，然后给出showToast(position)，其中这个position就是一个位置信息。
+    8. 而showToast这个函数是通过前面的函数调用它
+        ```
+                showToastTop() {
+                    this.showToast('top')
+                },
+                showToastMiddle() {
+                    this.showToast('middle')
+                },
+                showToastBottom() {
+                    this.showToast('bottom')
+                },
+        ```
+* 因为插件plugin.js里面已经引入了toast.
+```
+import Toast from './toast'
+```
+* 所以我们在toast-demo-1.vue引入的信息只需要button，vue，插件plugin.js，并且使用插件(通过Vue.use(plugin)使用插件)，这个use会去执行plugin里面的install方法,并且这个是用户主动写的。
+```
+    import Vue from 'vue'
+    import plugin from '../../../src/plugin'
+    import GButton from '../../../src/button'
+
+    Vue.use(plugin)
+```
+* 这个toast一开始是隐藏的，通过触发点击事件后显示出来。点击事件之后去执行vue.$toast即可。也就是在app.js里面的this.$toast(message,toastOptions)，,具体看下面
+```
+            this.$toast(`你的智商为${parseInt(Math.random()*100)}需要充值！`,{
+                closeButton: {
+                    text: '已充值',
+                    callback() {
+                        console.log('他说已经充值智商了')
+                    }
+                },
+                autoClose:3,
+                // autoCloseDelay:3,
+                enableHtml: false,
+                position
+            })
+```
+* 当然插件plugin.js里面是源头，是在Vue的原型上面增加的
+```
+export default {
+    install(Vue,options){
+        Vue.prototype.$toast=function(message,toastOptions){
+            if(currentToast) {//如果有toast，就关闭这个toast。
+                currentToast.close()
+            }
+            currentToast=createToast({
+                Vue,
+                message,
+                propsData:toastOptions,
+                onClose:()=>{
+                    currentToast=null//关闭前把currentToast赋值为null，因为前面的close之后，currentToast其实还是存在的。
+                }
+            })
+            console.log(currentToast)
+
+        }
+    }
+}
+```
+* 因为在html中写Vue框架会帮你加上这个Vue，所以可以省略，只需要写上$toast(message,toastOptions)即可这个message是一个字符串,toastOptions是一个对象。比如
+```
+    <g-button @click="$toast('点击弹出提示', {position:'middle'})">点我</g-button>
+```
+* 另外上方弹出会被轱辘UI那一栏覆盖掉(也就是挡住了，其实已经显示了，但是你却看不到),所以需要让他显示在最外层,我把toast.vue组件的class修改为gulu-toast
+```
+    <div class="gulu-toast" :class="toastClasses">
+```
+* 在toast-demo-1.vue里面增加一个[优先级](https://developer.mozilla.org/zh-CN/docs/Web/CSS/Specificity)
+```
+    .gulu-toast {
+        z-index: 30 !important;
+    }
+```
+* 为了体现没有关闭按钮我把toast.vue组件的line的部分也增加v-if
+```
+        <div class="line" ref="line" v-if="closeButton"></div>
+```
+
 
 
 
