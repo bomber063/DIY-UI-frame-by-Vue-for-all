@@ -175,6 +175,20 @@ export default {
         },
 ```
 * 因为我们弹出的popover气泡框用到的是具名slot并用template包裹的，所以都可转换为html。
+### 修复一些bug，删除多余的console.log,增加搜索和主页、文档、交流链接
+* 打开popover.vue这个组件链接，然后跳转到其他组件会显示一堆警告，增加代码`this.$refs.popover`消除这些警告
+```
+        destroyed(){
+            if(this.trigger==='click'){
+                this.$refs.popover&&this.$refs.popover.removeEventListener('click',this.onClick)
+            }
+            else{
+                this.$refs.popover&&this.$refs.popover.removeEventListener('mouseenter',this.open)
+                this.$refs.popover&&this.$refs.popover.removeEventListener('mouseleave',this.close)
+            }
+        },
+```
+* 但是还存在bug，有时候打开状态跳转到其他组件的时候这个组件的打开状态还存在。这个就先不解决了吧。
 
 
 

@@ -32,7 +32,7 @@ export default {
                     currentToast=null//关闭前把currentToast赋值为null，因为前面的close之后，currentToast其实还是存在的。
                 }
             })
-            console.log(currentToast)
+            // console.log(currentToast)
 
         }
     }

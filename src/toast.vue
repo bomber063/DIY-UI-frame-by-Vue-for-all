@@ -26,7 +26,6 @@
                 type:[Boolean,Number],
                 default:5,
                 validator(value){
-                  console.log(value);
                     return value === false || typeof value === 'number';
                 }
             },
@@ -35,7 +34,7 @@
             //     default: 5
             // },
             closeButton: {//是否有关闭按钮
-                type: Object,
+                type: [Object,Boolean],
                 default(){
                     return {
                         text: '关闭', callback: undefined
@@ -67,8 +66,10 @@
         },
         methods:{//两个方法函数
             updateStyles(){
-                this.$nextTick(()=>{
-                    this.$refs.line.style.height=`${this.$refs.toast.getBoundingClientRect().height}px`
+                setTimeout(()=>{
+                    if(this.$refs.line){
+                        this.$refs.line.style.height=`${this.$refs.toast.getBoundingClientRect().height}px`
+                    }
                 })
             },
             execAutoClose(){
