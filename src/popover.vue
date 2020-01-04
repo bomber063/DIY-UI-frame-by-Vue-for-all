@@ -159,7 +159,7 @@
             },
             open(){
                 this.visible = true
-                setTimeout(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                this.$nextTick(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
                     this.positionContent()
                     document.addEventListener('click', this.onClickDocument)
                 });

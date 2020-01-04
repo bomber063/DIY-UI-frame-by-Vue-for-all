@@ -163,6 +163,18 @@ export default {
 ```
         <div class="line" ref="line" v-if="closeButton"></div>
 ```
+### popover组件
+* 虽由于Vue版本不同，我原来用setTimeout来代替this.$nextTick。但是发现会有有一些延迟，导致先出现在中间，然后才开始定位。所以我把popover.vue组件里面的代码又改回了this.$nextTick。
+```
+    open(){
+            this.visible = true
+            this.$nextTick(() => {//这里由于Vue版本不通，所以把this.$nextTick修改为setTimeout来延迟
+                this.positionContent()
+                document.addEventListener('click', this.onClickDocument)
+            });
+        },
+```
+* 因为我们弹出的popover气泡框用到的是具名slot并用template包裹的，所以都可转换为html。
 
 
 
