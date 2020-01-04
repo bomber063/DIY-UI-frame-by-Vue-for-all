@@ -1,7 +1,7 @@
-## 完轱辘 - 一个 Vue UI 组件
+## 轱辘 - 一个 Vue UI 组件
 [![Build Status](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue-for-all.svg?branch=master)](https://travis-ci.org/bomber063/DIY-UI-frame-by-Vue-for-all)
 
-###介绍
+### 介绍
 * 这是我在学习 Vue 过程中做的一个 UI 框架，希望对你有用。
 
 ### 开始使用
