@@ -1,9 +1,10 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>布局</h2>
+        <h2>设置sider作为侧边栏预览</h2>
         <p>
-            <strong>预览</strong>
+            可以点击<strong>关闭</strong>
         </p>
+        <p>预览</p>
         <g-layout style="color: white; overflow:hidden; margin-bottom:50px;">
             <g-sider style=" background:#ddd; width:200px; color: black;">
                 sider
@@ -23,7 +24,7 @@
         <p>
             <strong>代码</strong>
         </p>
-        <pre><code>{{content}}</code></pre>
+<!--        <pre><code>{{content}}</code></pre>-->
     </div>
 </template>
 

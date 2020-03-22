@@ -1,6 +1,13 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>popover</h2>
+        <h2>说明</h2>
+        <ul>
+            <li>position：设置弹出层的位置（默认是top）</li>
+            <li>popover 弹出层内容默认支持 html</li>
+            <li>trigger：设置弹出层触发方式（支持click触发和hover触发两种方式，默认为click）</li>
+            <li>可为弹出层设置关闭按钮</li>
+        </ul>
+        <h2>position：设置弹出层的位置</h2>
         <p>
             <strong>预览</strong>
         </p>
@@ -31,7 +38,7 @@
         <p>
             <strong>代码</strong>
         </p>
-        <pre><code>{{content}}</code></pre>
+<!--        <pre><code>{{content}}</code></pre>-->
     </div>
 </template>
 

@@ -1,32 +1,14 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>支持HTML</h2>
+        <h2>v-slot代替slot 和 slot-scope</h2>
         <p>
             <strong>预览</strong>
         </p>
         <g-popover position="top">
-            <template slot="content">
-                <div><p class="g-p">弹出内容</p></div>
+            <template v-slot:content="xxx">
+                可以点击右边的关闭按钮关闭<g-button name="xxx" @click="xxx.close">关闭</g-button>
             </template>
             <g-button>上方弹出</g-button>
-        </g-popover>
-        <g-popover position="bottom">
-            <template slot="content">
-                <div><p class="g-p">弹出内容</p></div>
-            </template>
-            <g-button>下方弹出</g-button>
-        </g-popover>
-        <g-popover position="left">
-            <template slot="content">
-                <div><p class="g-p">弹出内容</p></div>
-            </template>
-            <g-button>左边弹出</g-button>
-        </g-popover>
-        <g-popover position="right">
-            <template slot="content">
-                <div><p class="g-p">弹出内容</p></div>
-            </template>
-            <g-button>右边弹出</g-button>
         </g-popover>
         <p>
             <strong>代码</strong>
@@ -46,37 +28,27 @@
         data() {
             return {
                 content: `
-            <style>
-                * {
-                    box-sizing: border-box;
-                }
-                .g-p {
-                    margin:0;
-                    color:red;
-                }
-            </style>
-
             <g-popover position="top">
                 <template slot="content">
-                    <div><p class="g-p">弹出内容</p></div>
+                    <div>弹出内容</div>
                 </template>
                 <g-button>上方弹出</g-button>
             </g-popover>
             <g-popover position="bottom">
                 <template slot="content">
-                    <div><p class="g-p">弹出内容</p></div>
+                    <div>弹出内容</div>
                 </template>
                 <g-button>下方弹出</g-button>
             </g-popover>
             <g-popover position="left">
                 <template slot="content">
-                    <div><p class="g-p">弹出内容</p></div>
+                    <div>弹出内容</div>
                 </template>
                 <g-button>左边弹出</g-button>
             </g-popover>
             <g-popover position="right">
                 <template slot="content">
-                    <div><p class="g-p">弹出内容</p></div>
+                    <div>弹出内容</div>
                 </template>
                 <g-button>右边弹出</g-button>
             </g-popover>`
@@ -89,9 +61,5 @@
 <style scoped>
     * {
         box-sizing: border-box;
-    }
-    .g-p {
-        margin:0;
-        color:red;
     }
 </style>

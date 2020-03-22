@@ -1,6 +1,16 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>24格网格</h2>
+        <h2>24格网格说明</h2>
+        <ul>
+            <li>网格就是把一个页面<strong>每一行分成 N 个部分</strong>（N = 12,16,24...），使用本组件通过行（row）和列（col）来定义你的页面</li>
+            <li><strong>默认</strong>支持各种移动设备的<strong>响应式适配</strong></li>
+            <li>支持<strong>设置gutter属性</strong>任意设置<strong>每一行所有</strong>元素之间的<strong>固定空隙</strong></li>
+            <li>支持<strong>设置offset属性</strong>任意设置<strong>每一行两个</strong>元素之间的<strong>任意空隙</strong></li>
+            <li>支持<strong>设置span属性</strong>来控制<strong>每一行每一个部分的宽度</strong></li>
+        </ul>
+
+        <h2>设置span控制宽度</h2>
+        <p></p>
         <p>
             <strong>预览</strong>
         </p>
@@ -91,7 +101,7 @@
         <p>
             <strong>代码</strong>
         </p>
-        <pre><code>{{content}}</code></pre>
+<!--        <pre><code>{{content}}</code></pre>-->
     </div>
 </template>
 

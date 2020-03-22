@@ -14,7 +14,7 @@
         <p>
             <strong>代码</strong>
         </p>
-        <pre><code>{{content}}</code></pre>
+<!--        <pre><code>{{content}}</code></pre>-->
     </div>
 </template>
 
@@ -27,10 +27,10 @@
         },
         data() {
             return {
-                value:'1',
+                value:'改变这里下面会跟着变化吗？',
                 content: `
             data:{
-                value:'1'
+                value:'改变这里下面会跟着变化吗？'
             }
 
             <g-input :valuea="value" @inputa="value=$event"></g-input>

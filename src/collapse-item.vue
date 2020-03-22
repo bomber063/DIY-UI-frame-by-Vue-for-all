@@ -2,15 +2,24 @@
     <div class="collapseItem">
         <div class="title" @click="toggle">
            {{title}}
+            <g-icon :class="{'down-icon':open}" name="right"></g-icon>
         </div>
+        <transition name="fade">
+
         <div class="content" v-if="open">
-            <slot></slot>
+                <slot></slot>
         </div>
+        </transition>
+
     </div>
 </template>
 
 <script>
+    import Icon from './icon'
     export default {
+        components:{
+          'g-icon':Icon
+        },
         name: "GuluCollapseItem",
         props:{
             title:{
@@ -45,13 +54,11 @@
                 if(this.open){
                     this.open=false
                     this.eventBus&&this.eventBus.$emit('update:removeSelected',this.name)//这里是在eventBus上触发update:selected这个事件。这里的this是触发事件的this，也就是点击了哪个就是哪个,因为这个toggle是前面的@click绑定的事件点击触发后执行的函数
-                    console.log(this)
                 }
                 else{
                     //为了避免重复打开所以下面的一行代码注释了，不然会导致打开两次
                     // this.open=true
                     this.eventBus&&this.eventBus.$emit('update:addSelected',this.name)//这里是在eventBus上触发update:selected这个事件。这里的this是触发事件的this，也就是点击了哪个就是哪个,因为这个toggle是前面的@click绑定的事件点击触发后执行的函数
-                    console.log(this)
                 }
             }
         }
@@ -72,7 +79,11 @@
             min-height: 32px;
             display: flex;
             align-items: center;
-            padding:0 8px;
+            justify-content: space-between;
+            padding:12px 16px;
+            > .down-icon {
+                transform: rotate(90deg);
+            }
         }
         &:first-child{
             > .title{
@@ -87,7 +98,37 @@
             }
         }
         > .content{
-            padding:8px;
+            padding:16px;
+            overflow: hidden;
+            box-sizing: border-box;
+        }
+        & .fade-enter-active{
+            animation: slide-open .3s ease-in-out;
+        }
+        & .fade-leave-active /* .fade-leave-active below version 2.1.8 */ {
+            animation: slide-close .3s ease-in-out;
+        }
+    }
+
+    @keyframes slide-open {
+        0% {
+            height: 0px;
+            padding: 0px;
+        }
+        100% {
+            height: auto;
+            padding: 16px;
+        }
+    }
+
+    @keyframes slide-close {
+        0% {
+            height: auto;
+            padding: 16px;
+        }
+        100% {
+            height: 0px;
+            padding: 0px;
         }
     }
 </style>

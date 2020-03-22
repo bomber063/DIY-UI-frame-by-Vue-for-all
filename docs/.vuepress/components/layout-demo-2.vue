@@ -1,9 +1,9 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>布局</h2>
-        <p>
-            <strong>预览</strong>
-        </p>
+        <h2>设置sider的上中下布局</h2>
+        <p>可以点击<strong>关闭</strong>sider</p>
+        <p>预览</p>
+
         <g-layout style="color: white; overflow:hidden; margin-bottom:50px;">
             <g-header style="height: 50px; background:lightskyblue;">
                 header
@@ -24,7 +24,7 @@
         <p>
             <strong>代码</strong>
         </p>
-        <pre><code>{{content}}</code></pre>
+<!--        <pre><code>{{content}}</code></pre>-->
     </div>
 </template>
 

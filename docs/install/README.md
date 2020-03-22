@@ -14,3 +14,7 @@ npm install gulu-bomber
 ``` sh
 yarn add gulu-bomber
 ```
+
+::: warning
+目前该 UI 仍然是半成品，切勿在生产环境中使用
+:::

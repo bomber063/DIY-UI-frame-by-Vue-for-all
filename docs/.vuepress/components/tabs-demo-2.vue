@@ -1,12 +1,6 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>用户需知</h2>
-        <ul>
-            <li>g-tabs（ 必须传入默认选择的tab）</li>
-            <li>g-tabs-item（ 必须传入name属性）（可选属性：disabled）</li>
-            <li>g-tabs-pane（ 必须传入name属性）</li>
-        </ul>
-        <h2>简单用法</h2>
+        <h2>设置disabled属性</h2>
         <p>
             <strong>预览</strong>
         </p>
@@ -14,10 +8,12 @@
             <g-tabs-head>
                 <g-tabs-item name="1">1</g-tabs-item>
                 <g-tabs-item name="2">2</g-tabs-item>
+                <g-tabs-item name="3" disabled>3</g-tabs-item>
             </g-tabs-head>
             <g-tabs-body>
                 <g-tabs-pane name="1">content 1</g-tabs-pane>
                 <g-tabs-pane name="2">content 2</g-tabs-pane>
+                <g-tabs-pane name="3">content 3</g-tabs-pane>
             </g-tabs-body>
         </g-tabs>
 
@@ -54,14 +50,16 @@
         }
 
         <g-tabs :selected="selected">
-          <g-tabs-head>
-            <g-tabs-item name="1">1</g-tabs-item>
-            <g-tabs-item name="2">2</g-tabs-item>
-          </g-tabs-head>
-          <g-tabs-body>
-            <g-tabs-pane name="1">content 1</g-tabs-pane>
-            <g-tabs-pane name="2">content 2</g-tabs-pane>
-          </g-tabs-body>
+            <g-tabs-head>
+                <g-tabs-item name="1">1</g-tabs-item>
+                <g-tabs-item name="2">2</g-tabs-item>
+                <g-tabs-item name="3" disabled>2</g-tabs-item>
+            </g-tabs-head>
+            <g-tabs-body>
+                <g-tabs-pane name="1">content 1</g-tabs-pane>
+                <g-tabs-pane name="2">content 2</g-tabs-pane>
+                <g-tabs-pane name="3">content 2</g-tabs-pane>
+            </g-tabs-body>
         </g-tabs>
     `.replace(/^ {8}/gm, '').trim()
         }

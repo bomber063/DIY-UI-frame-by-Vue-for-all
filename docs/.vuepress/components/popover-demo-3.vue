@@ -1,6 +1,6 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>将触发方式改为 hover</h2>
+        <h2>通过trigger将触发方式改为 hover</h2>
         <p>
             <strong>预览</strong>
         </p>
@@ -31,7 +31,7 @@
         <p>
             <strong>代码</strong>
         </p>
-        <pre><code>{{content}}</code></pre>
+<!--        <pre><code>{{content}}</code></pre>-->
     </div>
 </template>
 
@@ -46,25 +46,25 @@
         data() {
             return {
                 content: `
-            <g-popover position="top">
+            <g-popover position="top" trigger="hover">
                 <template slot="content">
                     <div>弹出内容</div>
                 </template>
                 <g-button>上方弹出</g-button>
             </g-popover>
-            <g-popover position="bottom">
+            <g-popover position="bottom" trigger="hover">
                 <template slot="content">
                     <div>弹出内容</div>
                 </template>
                 <g-button>下方弹出</g-button>
             </g-popover>
-            <g-popover position="left">
+            <g-popover position="left" trigger="hover">
                 <template slot="content">
                     <div>弹出内容</div>
                 </template>
                 <g-button>左边弹出</g-button>
             </g-popover>
-            <g-popover position="right">
+            <g-popover position="right" trigger="hover">
                 <template slot="content">
                     <div>弹出内容</div>
                 </template>

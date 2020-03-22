@@ -35,7 +35,7 @@
     <g-collapse single :selected.sync="selectedTab">
 <!--        下面的代码功能跟上面的是一样的，上面的是缩写-->
 <!--    <g-collapse :selected="selectedTab" @update:selected="selectedTab=$event">-->
-        <g-collapse-item title="标题1" name="1">内容1</g-collapse-item>
+        <g-collapse-item title="标题1" name="1">内容1你好好爱好嗷嗷嗷啊哦哦</g-collapse-item>
         <g-collapse-item title="标题2" name="2">内容2</g-collapse-item>
         <g-collapse-item title="标题3" name="3">内容3</g-collapse-item>
     </g-collapse>
@@ -54,6 +54,12 @@
     <g-button @click="$toast('点击弹出提示',{position:'top'})">上方弹出</g-button>
     <g-button @click="$toast('点击弹出提示', {position:'middle'})">中间弹出</g-button>
     <g-button @click="$toast('点击弹出提示', {position:'bottom'})">下方弹出</g-button>
+
+    <g-button-group>
+        <g-button icon="left">上一页</g-button>
+        <g-button>更多</g-button>
+        <g-button icon="right">下一页</g-button>
+    </g-button-group>
 </div>
 <script src="./src/app.js"></script>
 </body>
