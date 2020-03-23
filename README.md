@@ -43,10 +43,15 @@
     }
     ```
 ### 文档
+[官方文档](https://bomber063.github.io/DIY-UI-frame-by-Vue-for-all/)
 ### 提问
-### 变更记录
+[Issues](https://github.com/bomber063/DIY-UI-frame-by-Vue-for-all/issues)
 ### 联系方式
+邮箱：tangyihong063@163.com
 ### 贡献代码
+[Pull request](https://github.com/bomber063/DIY-UI-frame-by-Vue-for-all/pulls)
+### 变更记录
+具体见提交commits。
 
 
 

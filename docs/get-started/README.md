@@ -36,14 +36,15 @@ IE 15 及以上浏览器都支持此样式。
  $ cd hello-world
  $ npm run serve
 ```
+## 推荐通过yarn安装
 * 安装gulu-bomber
 ```sh
-npm install gulu-bomber
+yarn add gulu-bomber
 ```
 
 * 引入CSS
 ```sh
-import 'gulu-bomber-1-1/dist/index.css'
+import 'gulu-bomber/dist/index.css'
 ```
 * 组件的名字
 ```js
@@ -86,6 +87,33 @@ export default {
   }
 }
 ```
+
+## 通过npm安装
+```sh
+npm install gulu-bomber
+```
+
+* 引入CSS和组件名字同上
+
+* 使用哪个组件就引入哪个组件的名字。
+    * <strong>可能</strong>需要有全部路径。
+    * <strong>可能</strong>提示需要安装node-sass和sass-loader。
+```js
+import {Button} from 'gulu-bomber'
+import {Popover} from 'gulu-bomber'
+
+import 'gulu-bomber/dist/index.css'
+
+export default {
+  name: 'app',
+  components: {
+    'g-button':Button,
+    'g-popover':Popover
+  }
+}
+```
+
+
 
 
 
