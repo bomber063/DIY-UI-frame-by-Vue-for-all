@@ -1,6 +1,6 @@
 {
   "name": "gulu-bomber",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "这个是一个UI框架",
   "main": "dist/index.js",
   "scripts": {
