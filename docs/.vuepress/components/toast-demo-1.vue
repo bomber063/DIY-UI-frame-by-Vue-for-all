@@ -1,13 +1,13 @@
 <template>
     <div style="padding-top: 16px;">
-        <h2>this.$toast=function(message,toastOptions)</h2>
+        <h2>this.$toast</h2>
         <ul>
             <li>
                 <ul>
-                    参数
+                    this.$toast=function(message(弹出框显示的内容),toastOptions(弹窗选项)) ——参数
                     <li>message：弹出框显示的内容</li>
 
-                    <li>toastOptions包括下面四个参数
+                    <li>toastOptions：弹窗选项——包括下面四个参数
                         <ul>
                             <li>autoClose：是否自动关闭（<strong>默认5s后</strong>提示自动关闭,<strong>可以设置自动关闭的时间</strong>）</li>
                             <li>closeButton：关闭按钮选项（<strong>可以设置按钮文本以及后续操作</strong>）</li>
